@@ -1,0 +1,289 @@
+rm(list = ls())
+gc()
+set.seed(0)
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(
+  plm,
+  ggplot2,
+  tidyverse,
+  fixest,
+  tidymodels,
+  modelsummary
+)
+
+df <- read_csv("./input/concat_rawdata.csv")
+
+summary(df)
+
+# restrict only workers
+cleansed_df <- df %>%
+  filter(!syugyo_status_yearly_12 %in% c(7,8,9,10,11)) %>% # exclude non-employee(worker)
+  filter(syugyo_type %in% c(1))
+
+# convert practically missing values to missing
+upper_pct <- 0.99
+lower_pct <- 0.01
+cleansed_df <- cleansed_df %>%
+  mutate(weekly_work_hours = if_else(weekly_work_hours > quantile(weekly_work_hours, probs=upper_pct, na.rm=TRUE), as.numeric(NA), weekly_work_hours),
+         weekly_work_hours = if_else(weekly_work_hours < quantile(weekly_work_hours, probs=lower_pct, na.rm=TRUE), as.numeric(NA), weekly_work_hours),
+         main_salary_yearly = if_else(main_salary_yearly > quantile(main_salary_yearly, probs=upper_pct, na.rm=TRUE), as.numeric(NA), main_salary_yearly),
+         main_salary_yearly = if_else(main_salary_yearly < quantile(main_salary_yearly, probs=lower_pct, na.rm=TRUE), as.numeric(NA), main_salary_yearly),
+         sub_salary_yearly = if_else(sub_salary_yearly > quantile(sub_salary_yearly, probs=upper_pct, na.rm=TRUE), as.numeric(NA), sub_salary_yearly),
+         total_subwork_hour_weekly = if_else(total_subwork_hour_weekly > quantile(total_subwork_hour_weekly, probs=upper_pct, na.rm=TRUE), as.numeric(NA), total_subwork_hour_weekly),
+         remote_work_hours = if_else(remote_work_hours > quantile(remote_work_hours, probs=upper_pct, na.rm=TRUE), as.numeric(NA), remote_work_hours),
+         commuting_time = if_else(commuting_time > quantile(commuting_time, probs=upper_pct, na.rm=TRUE), as.numeric(NA), commuting_time),
+  ) %>%
+  dplyr::select(-c(remote_work_target_all_dummy, remote_work_target_spe_dummy, remote_work_target_child_dummy,
+                   heisa_tousan_flg, kaiko_flg, children_num, other_income_yearly,
+                   house_work_hours, subjob_demand, subwork_naiyo))
+
+# wage bin
+cleansed_df <- cleansed_df %>%
+  mutate(primary_wage_bin = if_else(main_salary_yearly < 200, "< 200", as.character(NA)),
+         primary_wage_bin = if_else(main_salary_yearly >= 200 & main_salary_yearly < 300, "200-300", primary_wage_bin),
+         primary_wage_bin = if_else(main_salary_yearly >= 300 & main_salary_yearly <= 400, "300-400", primary_wage_bin),
+         primary_wage_bin = if_else(main_salary_yearly >= 400 & main_salary_yearly <= 500, "400-500", primary_wage_bin), 
+         primary_wage_bin = if_else(main_salary_yearly >= 500 & main_salary_yearly <= 600, "500-600", primary_wage_bin),
+         primary_wage_bin = if_else(main_salary_yearly >= 600 & main_salary_yearly <= 700, "600-700", primary_wage_bin),
+         primary_wage_bin = if_else(main_salary_yearly > 700, "> 700", primary_wage_bin),
+         primary_wage_bin = factor(primary_wage_bin, 
+                                   levels=c("< 200", "200-300", "300-400", "400-500", "500-600",
+                                            "600-700", "> 700")))
+
+# WfH Dat
+cleansed_df <- cleansed_df %>%
+  mutate(remote_work_share = remote_work_hours / weekly_work_hours,
+         remote_work_day = if_else(remote_work_share == 0.00, 0, as.numeric(NA)),
+         remote_work_day = if_else(remote_work_share > 0.00 & remote_work_share <= 0.20, 0.20, remote_work_day),
+         remote_work_day = if_else(remote_work_share > 0.20 & remote_work_share <= 0.40, 0.40, remote_work_day),
+         remote_work_day = if_else(remote_work_share > 0.40 & remote_work_share <= 0.60, 0.60, remote_work_day),
+         remote_work_day = if_else(remote_work_share > 0.60 & remote_work_share <= 0.80, 0.80, remote_work_day),
+         remote_work_day = if_else(remote_work_share > 0.80 & remote_work_share <= 1, 1, remote_work_day),
+         remote_work_day = remote_work_day * weekly_work_day
+  )
+
+# fill in the missing
+cleansed_df <- cleansed_df %>%
+  mutate(sub_hour_fukisoku_flg = if_else(is.na(sub_hour_fukisoku_flg), 0, sub_hour_fukisoku_flg),
+         total_subwork_hour_weekly = if_else(subjob_flg == 2 & is.na(total_subwork_hour_weekly), 0, total_subwork_hour_weekly), # fillna by another values
+         sub_salary_yearly = if_else(subjob_flg == 2 & is.na(sub_salary_yearly), 0, sub_salary_yearly),
+         subjob_num_status = if_else(subjob_flg == 2 & is.na(subjob_num_status), 0, subjob_num_status)) 
+
+summary(cleansed_df)
+# change to a dummy or categorical variable
+cleansed_df <- cleansed_df %>%
+  mutate(sex = if_else(sex == 1, 0, sex), # female_dummy
+         sex = if_else(sex == 2, 1, sex),
+         #subjob_flg = if_else(subjob_flg == 2, 0, subjob_flg), # subjob_dummy
+         subjob_flg = if_else(is.na(total_subwork_hour_weekly), as.numeric(NA), 0),
+         subjob_flg = if_else(total_subwork_hour_weekly > 0, 1, subjob_flg),
+         subjob_flg = if_else(sub_hour_fukisoku_flg == 1 & is.na(subjob_flg), 1, subjob_flg),
+         #subjob_demand_flg = if_else(subjob_demand == 2, 0, subjob_demand), # subjob_dummy
+         seiki_dummy = if_else(koyo_type == 1, 1, 0), # seiki = 1, hiseiki = 0
+         subjob_num_status = if_else(subjob_flg == 0, 0, subjob_num_status),
+         remote_work_flg = if_else(is.na(remote_work_hours), as.numeric(NA), 0),
+         remote_work_flg = if_else(remote_work_hours > 0, 1, remote_work_flg),
+         gyosyu_code = factor(gyosyu_code),
+         occupation_code = factor(occupation_code),
+         koyo_type = factor(koyo_type))
+
+cleansed_df <- cleansed_df %>%
+  mutate(gakusyu_flg = if_else(gakusyu_school == 1, 1, 0),
+         gakusyu_flg = if_else(gakusyu_seminar == 1, 1, gakusyu_flg),
+         gakusyu_flg = if_else(gakusyu_tsushin == 1, 1, gakusyu_flg),
+         gakusyu_flg = if_else(gakusyu_elearning == 1, 1, gakusyu_flg),
+         gakusyu_flg = if_else(gakusyu_reading == 1, 1, gakusyu_flg)) %>%
+  dplyr::select(-c(gakusyu_school, gakusyu_seminar, gakusyu_tsushin, gakusyu_elearning,
+                   gakusyu_reading, gakusyu_internet, gakusyu_hearing, gakusyu_nothing))
+
+# remote bin
+#cleansed_df <- cleansed_df %>%
+#  mutate(wfh_hours_bin = if_else(remote_work_hours == 0, "0", "NA"),
+#         wfh_hours_bin = if_else(remote_work_hours > 0 & remote_work_hours <= 5, "1-5", wfh_hours_bin),
+#         wfh_hours_bin = if_else(remote_work_hours > 5 & remote_work_hours <= 10, "6-10", wfh_hours_bin),
+#         wfh_hours_bin = if_else(remote_work_hours > 10 & remote_work_hours <= 15, "11-15", wfh_hours_bin),
+#         wfh_hours_bin = if_else(remote_work_hours > 15 & remote_work_hours <= 20, "16-20", wfh_hours_bin),
+#         wfh_hours_bin = if_else(remote_work_hours > 20 & remote_work_hours <= 25, "21-25", wfh_hours_bin),
+#         wfh_hours_bin = if_else(remote_work_hours > 25 & remote_work_hours <= 30, "26-30", wfh_hours_bin),
+#         wfh_hours_bin = if_else(remote_work_hours > 30, "31-", wfh_hours_bin),
+#         wfh_hours_bin = factor(wfh_hours_bin, 
+#                                   levels=c("0", "1-5", "11-15", "16-20", "21-25",
+#                                            "26-30")))
+
+# age bin
+cleansed_df <- cleansed_df %>%
+  mutate(age_bin = if_else(age < 40, "-39", as.character(NA)),
+         age_bin = if_else(age >= 40, "40-", age_bin),
+         age_bin = factor(age_bin, levels=c("-39", "40-")))
+
+# region
+region_vec <- c("Hokkaido", "Aomori", "Iwate", "Miyagi", "Akita", "Yamagata",
+                "Fukushima", "Ibaraki", "Tochigi", "Gunma", "Saitama", "Chiba",
+                "Tokyo", "Kanagawa", "Niigata", "Toyama", "Ishikawa", "Fukui",
+                "Yamanashi", "Nagano", "Gifu", "Shizuoka", "Aichi", "Mie",
+                "Shiga", "Kyoto", "Osaka", "Hyogo", "Nara", "Wakayama",
+                "Tottori", "Shimane", "Okayama", "Hiroshima", "Yamaguchi", "Tokushima",
+                "Kagawa", "Ehime", "Kochi", "Fukuoka", "Saga", "Nagasaki",
+                "Kumamoto", "Oita", "Miyazaki", "Kagoshima", "Okinawa", "Overseas")
+
+region_df <- tibble(region=1:48, region_name=region_vec)
+cleansed_df <- left_join(cleansed_df,region_df , by="region")
+cleansed_df <- cleansed_df %>%
+  mutate(region = factor(region_name, levels=region_vec)) %>%
+  dplyr::select(-c(region_name)) %>%
+  filter(region != "Overseas")
+
+# firm_size
+cleansed_df <- cleansed_df %>%
+  mutate(firm_size = case_when(
+    #kaisya_kibo %in% 1:6 ~ "-100",
+    #kaisya_kibo %in% c(7) ~ "100-299",
+    kaisya_kibo %in% 1:6 ~ "-299",
+    kaisya_kibo %in% c(7) ~ "-299",
+    kaisya_kibo %in% 8:9 ~ "300-999",
+    #kaisya_kibo %in% 10:11 ~ "1000-4999",
+    #kaisya_kibo %in% c(12) ~ "5000-",
+    kaisya_kibo %in% 10:11 ~ "1000-",
+    kaisya_kibo %in% c(12) ~ "1000-",
+    kaisya_kibo %in% c(13) ~ "Government office",
+    TRUE ~ as.character(NA)
+  ),
+  firm_size = factor(firm_size),
+  kaisya_kibo = factor(kaisya_kibo))
+
+# job offer macro data wide to long
+pref_vec <- c("Hokkaido", "Aomori", "Iwate", "Miyagi", "Akita", "Yamagata",
+              "Fukushima", "Ibaraki", "Tochigi", "Gunma", "Saitama", "Chiba",
+              "Tokyo", "Kanagawa", "Niigata", "Toyama", "Ishikawa", "Fukui",
+              "Yamanashi", "Nagano", "Gifu", "Shizuoka", "Aichi", "Mie",
+              "Shiga", "Kyoto", "Osaka", "Hyogo", "Nara", "Wakayama",
+              "Tottori", "Shimane", "Okayama", "Hiroshima", "Yamaguchi", "Tokushima",
+              "Kagawa", "Ehime", "Kochi", "Fukuoka", "Saga", "Nagasaki",
+              "Kumamoto", "Oita", "Miyazaki", "Kagoshima", "Okinawa", "All")
+
+#education
+cleansed_df <- cleansed_df %>%
+  mutate(ba_dummy = if_else(edu_level %in% c(6, 7, 8, 14, 15), 1, 0))
+
+# children & spouse
+cleansed_df <- cleansed_df %>%
+  mutate(spouse_flg = if_else(spouse_flg ==  1, 1, 0),
+         children_dummy = if_else(children_dummy ==  1, 1, 0), 
+         child_7_13  = if_else(is.na(child_7_13) & children_dummy ==  1, 0, child_7_13))
+
+# flextime_level
+cleansed_df <- cleansed_df %>%
+  mutate(flexibility_level = if_else(flexibility_flg_hour == 5, 0, as.numeric(NA)),
+         flexibility_level = if_else(flexibility_flg_hour == 4, 0.25, flexibility_level),
+         flexibility_level = if_else(flexibility_flg_hour == 3, 0.5, flexibility_level),
+         flexibility_level = if_else(flexibility_flg_hour == 2, 0.75, flexibility_level),
+         flexibility_level = if_else(flexibility_flg_hour == 1, 1.0, flexibility_level))
+
+# industry、日本標準産業分類を参考に分類
+cleansed_df <- cleansed_df %>%
+  mutate(industry = case_when(
+    gyosyu_code %in% c(1,2) ~ "Agriculture, Fishing and Mining",
+    gyosyu_code %in% c(3, 4, 5) ~ "Construction",
+    gyosyu_code %in% 6:25 ~ "Manufacturing",
+    gyosyu_code %in% c(26) ~ "Electricity, Gas, and Water Supply",
+    gyosyu_code %in% 27:31 ~ "Information and Communication",
+    gyosyu_code %in% 32:36 ~ "Transportation and Warehousing",
+    gyosyu_code %in% 37:43 ~ "Wholesale and Retail Trade",
+    gyosyu_code %in% 44:49 ~ "Finance and Insurance",
+    gyosyu_code %in% c(50,58,61) ~ "Real Estate, Rental and Leasing",
+    gyosyu_code %in% c(51,52) ~ "Accommodation and Food Services",
+    gyosyu_code %in% c(53, 54) ~ "Health Care and Social Assistance",
+    gyosyu_code %in% c(55) ~ "Educational Services",
+    gyosyu_code %in% c(57) ~ "Lifestyle Services and Entertainment",
+    gyosyu_code %in% c(62, 63) ~ "Professional, Scientific, and Technical Services",
+    gyosyu_code %in% c(66) ~ "Public service",
+    gyosyu_code %in% c(56, 59, 60, 64, 65, 67) ~ "Other Services",
+    TRUE ~ as.character(NA)
+  ))
+
+# 日本標準職業分類を参考に分類
+cleansed_df <- cleansed_df %>%
+  mutate(occupation = case_when(
+    occupation_code %in% c(1) ~ "Housekeeper and Homehelper",
+    occupation_code %in% 2:5 ~ "Hairdresser and cleaning",
+    occupation_code %in% 6:10 ~ "Cook",
+    occupation_code %in% 11:14 ~ "Customer service and waitperson",
+    occupation_code %in% c(15) ~ "Building manager",
+    occupation_code %in% c(16, 17, 18) ~ "Machinery maintenance and repair",
+    occupation_code %in% c(19) ~ "Other customer service",
+    occupation_code %in% c(20, 21) ~ "Security",
+    occupation_code %in% c(22) ~ "Agriculture and fish",
+    occupation_code %in% 23:27 ~ "Motorist",
+    occupation_code %in% c(28,39) ~ "Carrier",
+    occupation_code %in% c(29) ~ "Metal manufacturing and processing",
+    occupation_code %in% c(30, 31, 32) ~ "Mechanical, electrical and automotive manufacturing",
+    occupation_code %in% c(33, 215:217) ~ "Non-metal manufacturing",
+    occupation_code %in% 34:37 ~ "Construction",
+    occupation_code %in% c(38) ~ "Cleaning",
+    occupation_code %in% 40:48 ~ "Management professionals",
+    occupation_code %in% c(49:59,64:81, 102) ~ "General clerk",
+    occupation_code %in% c(60:63) ~ "Production-related clerk",
+    occupation_code %in% c(82,83) ~ "Accounting clerk",
+    occupation_code %in% 84:96 ~ "Sales personnel",
+    occupation_code %in% c(97) ~ "Office equipment operator",
+    occupation_code %in% 98:100 ~ "Merchandise sales personnel",
+    occupation_code %in% c(101) ~ "Other sales personnel",
+    occupation_code %in% c(103, 104, 111:116) ~ "Manufacturing engineer",
+    occupation_code %in% 105:110 ~ "Agricultural, forestry and fisheries engineer",
+    occupation_code %in% 117:128 ~ "Non-developmental manufacturing engineer",
+    occupation_code %in% 129:142 ~ "Building and civil engineer",
+    occupation_code %in% c(143:171, 172 ,173:179)  ~ "Information and communication engineer",
+    occupation_code %in% c(180, 181)  ~ "Physician and pharmacist",
+    occupation_code %in% c(182, 183) ~ "Registered nurse",
+    occupation_code %in% c(184) ~ "Medical technician",
+    occupation_code %in% c(185, 186) ~ "Other healthcare professionals",
+    occupation_code %in% c(187, 206:210,213, 214, 218, 219, 221, 222, 223) ~ "Other professionals",
+    occupation_code %in% c(188, 189) ~ "Welfare professional",
+    occupation_code %in% c(190) ~ "Nursing service occupational personnel",
+    occupation_code %in% c(191) ~ "Legal professional",
+    occupation_code %in% c(192, 199:205) ~ "Management, finance and insurance professionals",
+    occupation_code %in% c(193, 211, 212) ~ "Author, reporter and editor",
+    occupation_code %in% 194:198 ~ "Designer and artist",
+    occupation_code %in% c(220) ~ "Tearcher",
+    occupation_code %in% c(224) ~ "Other",
+    TRUE ~ as.character(NA)
+  ))
+
+
+cleansed_df <- cleansed_df %>%
+  mutate(occupation_large = case_when(
+    occupation_code %in% c(1:15, 19) ~ "Customer service",
+    occupation_code %in% c(20, 21) ~ "Security",
+    occupation_code %in% c(22) ~ "Agriculture and fish",
+    occupation_code %in% 23:27 ~ "Motorist",
+    occupation_code %in% c(28, 38, 39) ~ "Carrier and Clearning",
+    occupation_code %in% c(16, 17, 18, 29, 30, 31, 32, 33, 215:217)  ~ "Manufacturing and processing",
+    occupation_code %in% 34:37 ~ "Construction",
+    occupation_code %in% 40:48 ~ "Management professionals",
+    occupation_code %in% c(49:59, 60:63, 64:81, 82,83, 97, 102) ~ "Clerk",
+    occupation_code %in% c(84:96, 98:100, 101) ~ "Sales personnel",
+    occupation_code %in% c(103, 104, 105:110, 111:116, 117:128, 129:142, 143:171, 
+                           172 ,173:179, 180, 181, 182, 183, 184, 185, 186, 187,
+                           188, 189, 190, 191, 192, 193,194:198,199:205,
+                           206:210, 211, 212, 213, 214, 218, 219,
+                           220, 221, 222, 223) ~ "Professional engineer",
+    occupation_code %in% c(224) ~ "Other",
+    TRUE ~ as.character(NA)
+  ))
+
+
+#write.csv(cleansed_df, file = "./input/agg_df.csv", row.names = FALSE)
+summary(cleansed_df)
+
+# drop na
+cleansed_df <- cleansed_df %>%
+  drop_na(remote_work_hours, remote_work_flg)
+
+summary(cleansed_df)
+
+
+write.csv(cleansed_df, file = "./input/cleansed_base.csv", row.names = FALSE)
+
+rm(df)
+gc(reset = TRUE)
+gc(reset = TRUE)

@@ -1,0 +1,170 @@
+rm(list = ls())
+gc()
+set.seed(0)
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(
+  plm,
+  ggplot2,
+  tidyverse,
+  fixest,
+  tidymodels,
+  modelsummary
+)
+
+df <- read_csv("./input/MROZ_mini.csv")
+
+##### Question 1 #####
+
+const <- rep(1, nrow(df))
+Mat_X <- as.matrix(cbind(const, df[, 1]))
+Mat_y <- as.matrix(df[, 3])
+
+# Computing beta_hat
+numerical_beta <- solve(t(Mat_X) %*% Mat_X) %*% (t(Mat_X) %*% Mat_y) 
+
+### Q1 Answer ###
+print(paste("beta_0: ", numerical_beta[1]))
+print(paste("beta_1: ", numerical_beta[2]))
+
+
+##### Question 2 #####
+
+# Definition of the objective function
+compute_ols <- function(theta, df) {
+  beta_0 <- theta[1]
+  beta_1 <- theta[2]
+  J <- 0.0
+  for (i in 1:nrow(df)) {
+    add_J <- (df$lwage[[i]] - beta_0 - (beta_1*df$educ[[i]]))** 2
+    J <- J + add_J
+  }
+  return(J)
+} 
+
+# Set initial value of theta
+initial_theta <- c(0, 0)
+
+# Minimizing the objective function by using optim function
+result <- optim(par = initial_theta, fn = compute_ols, df = df, method = "BFGS")
+result
+
+### Q2 Answer ###
+print(paste("Numerical beta_0: ", numerical_beta[1]))
+print(paste("Analytical beta_0: ", result$par[1]))
+print(paste("Numerical beta_1: ", numerical_beta[2]))
+print(paste("Analytical beta_1: ", result$par[2]))
+
+
+##### Question 3 #####
+
+# compute Asymptotic SE of OLS estimator
+
+# Hayashi p.123 calculating sample mean of S
+compute_S_hat <- function(theta, df) {
+  S_hat <- matrix(0, ncol = 2, nrow = 2)
+  for (i in 1:nrow(df)) {
+    x_i_mat <- Mat_X[i, ]
+    epsilon_hat <- as.numeric(df$lwage[[i]] - t(x_i_mat) %*% theta)
+    add_S_hat <- (epsilon_hat ^ 2) * (x_i_mat %*% t(x_i_mat))
+    S_hat <- S_hat + add_S_hat
+  }
+  S_hat <- (1/nrow(df)) * S_hat
+  return(S_hat)
+}
+
+S_xx <- (1/nrow(df)) * (t(Mat_X) %*% Mat_X)
+S_hat <- compute_S_hat(numerical_beta, df)
+
+# Computing the asymptotic variance estimator
+Avar_est <- solve(S_xx) %*% S_hat %*% solve(S_xx)
+
+# Computing the asymptotic SE for beta_0 and beta_1
+Asy_std_beta_0 <- sqrt ((1/nrow(df)) * Avar_est[1])
+Asy_std_beta_1 <- sqrt ((1/nrow(df)) * Avar_est[4])
+
+### Q3 Answer ###
+print(paste("Asymptotic standard error beta 0: ", Asy_std_beta_0))
+print(paste("Asymptotic standard error beta 1: ", Asy_std_beta_1))
+
+#For valitation
+model <- feols(lwage ~  1   + educ, 
+               df, vcov="White"
+)
+etable(model)
+
+##### Question 4 #####
+# See the main body
+
+##### Question 5 #####
+# See the main body
+
+##### Question 6 #####
+
+# Define Z as IV
+Mat_Z <- as.matrix(cbind(const, df[, 2])) # const + futheduc
+Mat_Z
+# get IV estimator
+P_Z = Mat_Z %*% solve(t(Mat_Z) %*% Mat_Z) %*% t(Mat_Z)
+numerical_beta_IV <- solve(t(Mat_X) %*% P_Z %*% Mat_X) %*% (t(Mat_X) %*% P_Z %*% Mat_y)
+numerical_beta_IV
+
+# Compute asymptotic SE of IV estimator based on Hansen p. 354
+
+# Compute epsilon_hat
+compute_epsilon_hat <- function(theta, df) {
+  epsilon_hat <- 0
+  for (i in 1:nrow(df)) {
+    x_i_mat <- Mat_X[i, ]
+    z_i_mat <- Mat_Z[i, ]
+    add_epsilon_hat <- as.numeric(df$lwage[[i]] - t(x_i_mat) %*% theta)
+    add_epsilon_hat <- (add_epsilon_hat) ^ 2
+    epsilon_hat <- epsilon_hat + add_epsilon_hat
+  }
+  epsilon_hat <- (1/nrow(df)) * epsilon_hat
+  return(epsilon_hat)
+}
+
+Q_xz <- (1/nrow(df)) * (t(Mat_X) %*% Mat_Z)
+Q_zx <- (1/nrow(df)) * (t(Mat_Z) %*% Mat_X)
+Q_zz <- (1/nrow(df)) * (t(Mat_Z) %*% Mat_Z)
+epsilon_hat <- compute_epsilon_hat(numerical_beta_IV, df)
+
+# Computing the asymptotic variance estimator
+edge_comp <- solve(Q_xz %*% solve(Q_zz) %*% Q_zx)
+Avar_est_IV <- edge_comp * epsilon_hat
+
+# Computing the asymptotic SE for beta_0 and beta_1
+Asy_std_beta_IV_0 <- sqrt ((1/nrow(df)) * Avar_est_IV[1])
+Asy_std_beta_IV_1 <- sqrt ((1/nrow(df)) * Avar_est_IV[4])
+
+### Q6 Answer ###
+
+# print beta IV
+print(paste("Numerical beta_IV_0: ", numerical_beta_IV[1]))
+print(paste("Numerical beta_IV_1: ", numerical_beta_IV[2]))
+
+# Print Asy SE for beta
+print(paste("Asymptotic standard error beta IV 0: ", Asy_std_beta_IV_0))
+print(paste("Asymptotic standard error beta IV 1: ", Asy_std_beta_IV_1))
+
+#For valitation
+model <- feols(lwage ~  1  | educ ~ fatheduc, 
+               df, vcov="White"
+)
+etable(model)
+
+
+kntk_df <- read_csv("./input/data_KinokoTakenoko.csv")
+head(kntk_df, 30)
+
+##### Question 2-4 #####
+compute_loglikelihood <- function(theta, kntk_df) {
+
+  lf <- 0.0
+  for (i in 1:nrow(df)) {
+    for (k in 1:5) {
+    add_lf <- log(theta[1] + theta[2](300 - ))
+    lf <- lf + add_lf
+  }
+  return(lf)
+} 

@@ -1,0 +1,131 @@
+rm(list = ls())
+gc()
+set.seed(0)
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(
+  ggplot2,
+  tidyverse,
+  fixest,
+  tidymodels,
+  kableExtra,
+  modelsummary,
+  estimatr,
+  survival
+)
+
+options(digits=3)
+
+df <- read_csv("./input/cleansed_regression_fe.csv")
+
+df_fe <- df %>%
+  rename(individual = id) %>%
+  mutate(occupation = factor(occupation),
+         industry = factor(industry),
+         time = factor(year)
+         )
+
+
+summary(df_fe)
+
+df_income <- df_fe %>%
+  #drop_na()
+  drop_na(sub_salary_yearly)
+
+df_hours <- df_fe %>%
+  drop_na()
+
+model1 <- feols(subjob_flg ~ 1 + share_wfh_index_iv + sex + age+ I(age^2)  + ba_dummy + child_7_13 + firm_size ,
+                df_income, 
+                vcov = "HC1",
+                panel.id = ~ individual + year)
+
+
+
+model2 <- feols(subjob_flg ~  1 + remote_work_flg + sex + age+ I(age^2)  + ba_dummy + child_7_13 + firm_size | 
+                  individual + occupation^time + region^time, 
+                df_income, 
+                vcov = "HC1",
+                panel.id = ~ individual + year)
+
+model3 <- feols(subjob_flg ~  1   + sex + age+ I(age^2)  + ba_dummy + child_7_13 + firm_size | 
+                  individual + occupation^time + region^time   |  remote_work_flg ~ share_wfh_index_iv, 
+                df_income, 
+                vcov = "HC1",
+                panel.id = ~ individual + year)
+
+#etable(model1, model2, model3, model4,  cluster = "id")
+# 過小評価バイアス回避のため、十分なクラスター数のあるoccupationを用いる
+#etable(model1,  model2, model3, model4, model5, cluster = "industry", style.tex = style.tex("aer"),  tex = TRUE)
+
+
+
+
+model4 <- feols(total_subwork_hour_weekly ~ 1 + remote_work_flg + sex + age+ I(age^2)  + ba_dummy + child_7_13 + firm_size ,
+                df_hours,
+                vcov = "HC1",
+                panel.id = ~ individual + year)
+
+model5 <- feols(total_subwork_hour_weekly ~  1 + remote_work_flg + sex + age+ I(age^2)  + ba_dummy + child_7_13 + firm_size | 
+                  individual + occupation^time + region^time  ,  
+                df_hours,
+                vcov = "HC1",
+                panel.id = ~ individual + year)
+model6 <- feols(total_subwork_hour_weekly ~  1  + sex + age+ I(age^2)  + ba_dummy + child_7_13 + firm_size | 
+                  individual + occupation^time + region^time  | remote_work_flg ~ share_wfh_index_iv,  
+                df_hours,
+                vcov = "HC1",
+                panel.id = ~ individual + year)
+
+# 副業の年収
+model7 <- feols(sub_salary_yearly ~ 1 + remote_work_flg + sex + age + I(age^2) + ba_dummy + child_7_13 + firm_size, 
+                df_income,
+                vcov = "HC1",
+                panel.id = ~ individual + year)
+
+model8 <- feols(sub_salary_yearly ~  1 + remote_work_flg + sex + age+ I(age^2)  + ba_dummy + child_7_13 + firm_size | 
+                  individual + occupation^time + region^time  ,  
+                df_income,
+                vcov = "HC1",
+                panel.id = ~ individual + year)
+model9 <- feols(sub_salary_yearly ~  1  + sex + age + I(age^2) + ba_dummy + child_7_13 + firm_size | 
+                  individual + occupation^time + region^time   |  remote_work_flg ~ share_wfh_index_iv ,  
+                df_income,
+                vcov = "HC1",
+                panel.id = ~ individual + year)
+
+etable(model3,model6, model9, stage = 1, fitstat = ~ . + ivfall + ivwaldall.p,
+       signif.code=c("***"=0.01,"**"=0.05,"*"=0.10), digits=3, digits.stats=3,
+       dict = c(remote_work_flg = "WfH",
+                sex = "Female",
+                age = "Age",
+                ba_dummy = "Bachelors Degree or Higher",
+                spouse_flg = "Married",
+                kaisya_kibo = "Firm size",
+                sub_salary_yearly = "Annual income of secondary job",
+                koyo_type = "Regular worker",
+                spouse_flg = "Married",
+                flexibility_level = "Flexibility level",
+                main_salary_yearly = "Annual income of primary job",
+                subjob_flg = "Moonlighting", 
+                total_subwork_hour_weekly = "Secondary working hour",
+                share_wfh_index_iv = "WfH Feasibility"))
+
+etable(model1, model2, model3, model4, model5, model6, model7, model8, model9, stage = 2, fitstat = ~ . + ivwaldall.p,
+       signif.code=c("***"=0.01,"**"=0.05,"*"=0.10), digits=3, digits.stats=3,
+       dict = c(remote_work_flg = "WfH",
+                sex = "Female",
+                age = "Age",
+                ba_dummy = "Bachelors Degree or Higher",
+                spouse_flg = "Married",
+                kaisya_kibo = "Firm size",
+                sub_salary_yearly = "Annual income of secondary job",
+                koyo_type = "Regular worker",
+                spouse_flg = "Married",
+                flexibility_level = "Flexibility level",
+                main_salary_yearly = "Annual income of primary job",
+                subjob_flg = "Moonlighting", 
+                total_subwork_hour_weekly = "Secondary working hour",
+                share_wfh_index_iv = "WfH Feasibility"))
+
+
+print((0.061-0.030)/(sqrt(0.005^2 + 0.029^2)))

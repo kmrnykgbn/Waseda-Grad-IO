@@ -1,0 +1,28 @@
+{
+    "id": "02AA8990",
+    "path": "~/workspace/toyama_io/src/Homework1.Rmd",
+    "project_path": "src/Homework1.Rmd",
+    "type": "r_markdown",
+    "hash": "719691444",
+    "contents": "",
+    "dirty": false,
+    "created": 1713694473218.0,
+    "source_on_save": false,
+    "relative_order": 5,
+    "properties": {
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "128,0",
+        "scrollLine": "121",
+        "working_dir": "project"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1713789733,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1713789733825,
+    "read_only": false,
+    "read_only_alternatives": []
+}
