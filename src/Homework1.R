@@ -102,7 +102,6 @@ etable(model)
 
 # Define Z as IV
 Mat_Z <- as.matrix(cbind(const, df[, 2])) # const + futheduc
-Mat_Z
 # get IV estimator
 P_Z = Mat_Z %*% solve(t(Mat_Z) %*% Mat_Z) %*% t(Mat_Z)
 numerical_beta_IV <- solve(t(Mat_X) %*% P_Z %*% Mat_X) %*% (t(Mat_X) %*% P_Z %*% Mat_y)
@@ -157,14 +156,95 @@ etable(model)
 kntk_df <- read_csv("./input/data_KinokoTakenoko.csv")
 head(kntk_df, 30)
 
-##### Question 2-4 #####
-compute_loglikelihood <- function(theta, kntk_df) {
+# Set price
+kntk_df <- kntk_df %>%
+    mutate(p_kino = if_else(occasion == "X1", 200, 0),
+           p_kino = if_else(occasion == "X2", 170, p_kino),
+           p_kino = if_else(occasion == "X3", 240, p_kino),
+           p_kino = if_else(occasion == "X4", 200, p_kino),
+           p_kino = if_else(occasion == "X5", 200, p_kino),
+           p_take = if_else(occasion == "X1", 200, 0),
+           p_take = if_else(occasion == "X2", 200, p_take),
+           p_take = if_else(occasion == "X3", 200, p_take),
+           p_take = if_else(occasion == "X4", 250, p_take),
+           p_take = if_else(occasion == "X5", 180, p_take)
+           )
 
+##### Question 2-4 #####
+compute_loglikelihood <- function(theta, df) {
+  alpha_kino <- theta[1]
+  alpha_take <- theta[2]
+  beta <- theta[3]
+  
+  # Calculate probability for i, j, k
+  df <- df %>%
+    mutate(denominator = 1 + exp(alpha_kino - beta*p_kino) + exp(alpha_take - beta*p_take),
+           prob = if_else(choice == 1, exp(alpha_kino - beta*p_kino) / denominator, 0),
+           prob = if_else(choice == 2, exp(alpha_take - beta*p_take) / denominator, prob),
+           prob = if_else(choice == 0, 1 / denominator, prob))
+
+  N = max(df$id)
   lf <- 0.0
-  for (i in 1:nrow(df)) {
+  for (i in 1:N) {
     for (k in 1:5) {
-    add_lf <- log(theta[1] + theta[2](300 - ))
-    lf <- lf + add_lf
+      # get P_{ijk}
+      prob <- df %>%
+        filter(id == i & occasion == paste0("X", k)) %>%
+        pull(prob)
+      
+      add_lf <- log(prob)
+      
+      lf <- lf + add_lf
+    }
   }
   return(lf)
 } 
+
+#For valitation
+reg_df <- kntk_df %>% 
+  mutate(y = if_else(choice == 1, 1, 0), 
+         x = if_else(choice == 1, p_kino, 0),
+         x = if_else(choice == 2, p_take, x))
+
+# OLS To get the initial value
+model <- feols(y ~  1   + x, 
+               reg_df, vcov="White"
+)
+etable(model)
+
+# Maximizing the Log-Likelihood by using optim function
+initial_theta <- c(model$coefficients[1], model$coefficients[1], model$coefficients[2])
+start.time <- Sys.time()
+MLE_res <- optim(par = initial_theta, fn = compute_loglikelihood, df = kntk_df, method='BFGS', control = list(fnscale = -1))
+end.time <- Sys.time()
+end.time - start.time
+
+#Answer Q2-4
+MLE_res
+print(paste("alpha kinoko hat: ", MLE_res$par[1]))
+print(paste("alpha takenoko hat: ", MLE_res$par[2]))
+print(paste("beta: ", MLE_res$par[3]))
+
+# Robustness check about initial value
+
+#for (i in seq(from = 0, to = 1, by = 0.5)) {
+  #initial_theta <- c(i, i, i)
+  #print(paste("Initial theta: ", c(i, i, i)))
+  #start.time <- Sys.time()
+  #MLE_res <- optim(par = initial_theta, fn = compute_loglikelihood, df = kntk_df, method='BFGS', control = list(fnscale = -1))
+  #end.time <- Sys.time()
+  #end.time - start.time
+  #MLE_res
+#}
+
+##### Question 3-2 #####
+mu <- 2
+sigma <- 2
+N <- 1000 # num of draw
+
+nu_vec <- rnorm(N, mu, sigma)
+
+E_X2_hat = 0
+for (nu_r in nu_vec) {
+  E_X2_hat = E_X2_hat + (mu + sigma * nu_r)^2
+}

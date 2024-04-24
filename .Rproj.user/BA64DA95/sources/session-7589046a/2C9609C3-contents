@@ -119,8 +119,8 @@
 
 \begin{verbatim}
 ##          used (Mb) gc trigger (Mb) max used (Mb)
-## Ncells 475831 25.5    1027411 54.9   664211 35.5
-## Vcells 891650  6.9    8388608 64.0  1814572 13.9
+## Ncells 475915 25.5    1027651 54.9   664211 35.5
+## Vcells 892251  6.9    8388608 64.0  1814572 13.9
 \end{verbatim}
 
 \begin{Shaded}
@@ -139,13 +139,7 @@
 \begin{Highlighting}[]
 \NormalTok{pacman}\SpecialCharTok{::}\FunctionTok{p\_load}\NormalTok{(}
 \NormalTok{  tidyverse,}
-\NormalTok{  mlr3verse,}
-\NormalTok{  rpart.plot,}
-\NormalTok{  ranger,}
-\NormalTok{  future,}
-\NormalTok{  mlr3pipelines,}
-\NormalTok{  igraph,}
-\NormalTok{  glmnet}
+\NormalTok{  fixest}
 \NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
@@ -457,7 +451,246 @@
 ## [1] "Asymptotic standard error beta IV 1:  0.0350595718842378"
 \end{verbatim}
 
-\hypertarget{question-2-3}{%
-\section{Question 2-3}\label{question-2-3}}
+\hypertarget{kinoko-takenoko-data}{%
+\subsubsection{Kinoko Takenoko Data}\label{kinoko-takenoko-data}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{kntk\_df }\OtherTok{\textless{}{-}} \FunctionTok{read\_csv}\NormalTok{(}\StringTok{"./input/data\_KinokoTakenoko.csv"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## New names:
+## Rows: 1110 Columns: 4
+## -- Column specification
+## -------------------------------------------------------- Delimiter: "," chr
+## (1): occasion dbl (3): ...1, id, choice
+## i Use `spec()` to retrieve the full column specification for this data. i
+## Specify the column types or set `show_col_types = FALSE` to quiet this message.
+## * `` -> `...1`
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Set price}
+\NormalTok{kntk\_df }\OtherTok{\textless{}{-}}\NormalTok{ kntk\_df }\SpecialCharTok{\%\textgreater{}\%}
+    \FunctionTok{mutate}\NormalTok{(}\AttributeTok{p\_kino =} \FunctionTok{if\_else}\NormalTok{(occasion }\SpecialCharTok{==} \StringTok{"X1"}\NormalTok{, }\DecValTok{200}\NormalTok{, }\DecValTok{0}\NormalTok{),}
+           \AttributeTok{p\_kino =} \FunctionTok{if\_else}\NormalTok{(occasion }\SpecialCharTok{==} \StringTok{"X2"}\NormalTok{, }\DecValTok{170}\NormalTok{, p\_kino),}
+           \AttributeTok{p\_kino =} \FunctionTok{if\_else}\NormalTok{(occasion }\SpecialCharTok{==} \StringTok{"X3"}\NormalTok{, }\DecValTok{240}\NormalTok{, p\_kino),}
+           \AttributeTok{p\_kino =} \FunctionTok{if\_else}\NormalTok{(occasion }\SpecialCharTok{==} \StringTok{"X4"}\NormalTok{, }\DecValTok{200}\NormalTok{, p\_kino),}
+           \AttributeTok{p\_kino =} \FunctionTok{if\_else}\NormalTok{(occasion }\SpecialCharTok{==} \StringTok{"X5"}\NormalTok{, }\DecValTok{200}\NormalTok{, p\_kino),}
+           \AttributeTok{p\_take =} \FunctionTok{if\_else}\NormalTok{(occasion }\SpecialCharTok{==} \StringTok{"X1"}\NormalTok{, }\DecValTok{200}\NormalTok{, }\DecValTok{0}\NormalTok{),}
+           \AttributeTok{p\_take =} \FunctionTok{if\_else}\NormalTok{(occasion }\SpecialCharTok{==} \StringTok{"X2"}\NormalTok{, }\DecValTok{200}\NormalTok{, p\_take),}
+           \AttributeTok{p\_take =} \FunctionTok{if\_else}\NormalTok{(occasion }\SpecialCharTok{==} \StringTok{"X3"}\NormalTok{, }\DecValTok{200}\NormalTok{, p\_take),}
+           \AttributeTok{p\_take =} \FunctionTok{if\_else}\NormalTok{(occasion }\SpecialCharTok{==} \StringTok{"X4"}\NormalTok{, }\DecValTok{250}\NormalTok{, p\_take),}
+           \AttributeTok{p\_take =} \FunctionTok{if\_else}\NormalTok{(occasion }\SpecialCharTok{==} \StringTok{"X5"}\NormalTok{, }\DecValTok{180}\NormalTok{, p\_take)}
+\NormalTok{           )}
+
+\FunctionTok{head}\NormalTok{(kntk\_df, }\DecValTok{30}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 30 x 6
+##     ...1    id occasion choice p_kino p_take
+##    <dbl> <dbl> <chr>     <dbl>  <dbl>  <dbl>
+##  1     1     1 X1            2    200    200
+##  2     2     2 X1            2    200    200
+##  3     3     3 X1            0    200    200
+##  4     4     4 X1            0    200    200
+##  5     5     5 X1            0    200    200
+##  6     6     6 X1            0    200    200
+##  7     7     7 X1            0    200    200
+##  8     8     8 X1            2    200    200
+##  9     9     9 X1            1    200    200
+## 10    10    10 X1            2    200    200
+## # i 20 more rows
+\end{verbatim}
+
+\hypertarget{question-2-4}{%
+\section{Question 2-4}\label{question-2-4}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\#\#\#\# Question 2{-}4 \#\#\#\#\#}
+\NormalTok{compute\_loglikelihood }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(theta, df) \{}
+\NormalTok{  alpha\_kino }\OtherTok{\textless{}{-}}\NormalTok{ theta[}\DecValTok{1}\NormalTok{]}
+\NormalTok{  alpha\_take }\OtherTok{\textless{}{-}}\NormalTok{ theta[}\DecValTok{2}\NormalTok{]}
+\NormalTok{  beta }\OtherTok{\textless{}{-}}\NormalTok{ theta[}\DecValTok{3}\NormalTok{]}
+  
+  \CommentTok{\# Calculate probability for i, j, k}
+\NormalTok{  df }\OtherTok{\textless{}{-}}\NormalTok{ df }\SpecialCharTok{\%\textgreater{}\%}
+    \FunctionTok{mutate}\NormalTok{(}\AttributeTok{denominator =} \DecValTok{1} \SpecialCharTok{+} \FunctionTok{exp}\NormalTok{(alpha\_kino }\SpecialCharTok{{-}}\NormalTok{ beta}\SpecialCharTok{*}\NormalTok{p\_kino) }\SpecialCharTok{+} \FunctionTok{exp}\NormalTok{(alpha\_take }\SpecialCharTok{{-}}\NormalTok{ beta}\SpecialCharTok{*}\NormalTok{p\_take),}
+           \AttributeTok{prob =} \FunctionTok{if\_else}\NormalTok{(choice }\SpecialCharTok{==} \DecValTok{1}\NormalTok{, }\FunctionTok{exp}\NormalTok{(alpha\_kino }\SpecialCharTok{{-}}\NormalTok{ beta}\SpecialCharTok{*}\NormalTok{p\_kino) }\SpecialCharTok{/}\NormalTok{ denominator, }\DecValTok{0}\NormalTok{),}
+           \AttributeTok{prob =} \FunctionTok{if\_else}\NormalTok{(choice }\SpecialCharTok{==} \DecValTok{2}\NormalTok{, }\FunctionTok{exp}\NormalTok{(alpha\_take }\SpecialCharTok{{-}}\NormalTok{ beta}\SpecialCharTok{*}\NormalTok{p\_take) }\SpecialCharTok{/}\NormalTok{ denominator, prob),}
+           \AttributeTok{prob =} \FunctionTok{if\_else}\NormalTok{(choice }\SpecialCharTok{==} \DecValTok{0}\NormalTok{, }\DecValTok{1} \SpecialCharTok{/}\NormalTok{ denominator, prob))}
+
+\NormalTok{  N }\OtherTok{=} \FunctionTok{max}\NormalTok{(df}\SpecialCharTok{$}\NormalTok{id)}
+\NormalTok{  lf }\OtherTok{\textless{}{-}} \FloatTok{0.0}
+  \ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{N) \{}
+    \ControlFlowTok{for}\NormalTok{ (k }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\DecValTok{5}\NormalTok{) \{}
+      \CommentTok{\# get P\_\{ijk\}}
+\NormalTok{      prob }\OtherTok{\textless{}{-}}\NormalTok{ df }\SpecialCharTok{\%\textgreater{}\%}
+        \FunctionTok{filter}\NormalTok{(id }\SpecialCharTok{==}\NormalTok{ i }\SpecialCharTok{\&}\NormalTok{ occasion }\SpecialCharTok{==} \FunctionTok{paste0}\NormalTok{(}\StringTok{"X"}\NormalTok{, k)) }\SpecialCharTok{\%\textgreater{}\%}
+        \FunctionTok{pull}\NormalTok{(prob)}
+      
+\NormalTok{      add\_lf }\OtherTok{\textless{}{-}} \FunctionTok{log}\NormalTok{(prob)}
+      
+\NormalTok{      lf }\OtherTok{\textless{}{-}}\NormalTok{ lf }\SpecialCharTok{+}\NormalTok{ add\_lf}
+\NormalTok{    \}}
+\NormalTok{  \}}
+  \FunctionTok{return}\NormalTok{(lf)}
+\NormalTok{\} }
+
+\CommentTok{\# OLS To get the initial value}
+\NormalTok{reg\_df }\OtherTok{\textless{}{-}}\NormalTok{ kntk\_df }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{y =} \FunctionTok{if\_else}\NormalTok{(choice }\SpecialCharTok{==} \DecValTok{1}\NormalTok{, }\DecValTok{1}\NormalTok{, }\DecValTok{0}\NormalTok{), }
+         \AttributeTok{x =} \FunctionTok{if\_else}\NormalTok{(choice }\SpecialCharTok{==} \DecValTok{1}\NormalTok{, p\_kino, }\DecValTok{0}\NormalTok{),}
+         \AttributeTok{x =} \FunctionTok{if\_else}\NormalTok{(choice }\SpecialCharTok{==} \DecValTok{2}\NormalTok{, p\_take, x))}
+\NormalTok{model }\OtherTok{\textless{}{-}} \FunctionTok{feols}\NormalTok{(y }\SpecialCharTok{\textasciitilde{}}  \DecValTok{1}   \SpecialCharTok{+}\NormalTok{ x, }
+\NormalTok{               reg\_df, }\AttributeTok{vcov=}\StringTok{"White"}
+\NormalTok{)}
+\FunctionTok{etable}\NormalTok{(model)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##                               model
+## Dependent Var.:                   y
+##                                    
+## Constant         0.0197*** (0.0035)
+## x               0.0019*** (9.59e-5)
+## _______________ ___________________
+## S.E. type       Heteroskedast.-rob.
+## Observations                  1,110
+## R2                          0.17220
+## Adj. R2                     0.17145
+## ---
+## Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Maximizing the Log{-}Likelihood by using optim function}
+\NormalTok{initial\_theta }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(model}\SpecialCharTok{$}\NormalTok{coefficients[}\DecValTok{1}\NormalTok{], model}\SpecialCharTok{$}\NormalTok{coefficients[}\DecValTok{1}\NormalTok{], model}\SpecialCharTok{$}\NormalTok{coefficients[}\DecValTok{2}\NormalTok{])}
+\NormalTok{start.time }\OtherTok{\textless{}{-}} \FunctionTok{Sys.time}\NormalTok{()}
+\NormalTok{MLE\_res }\OtherTok{\textless{}{-}} \FunctionTok{optim}\NormalTok{(}\AttributeTok{par =}\NormalTok{ initial\_theta, }\AttributeTok{fn =}\NormalTok{ compute\_loglikelihood, }\AttributeTok{df =}\NormalTok{ kntk\_df, }\AttributeTok{method=}\StringTok{\textquotesingle{}BFGS\textquotesingle{}}\NormalTok{, }\AttributeTok{control =} \FunctionTok{list}\NormalTok{(}\AttributeTok{fnscale =} \SpecialCharTok{{-}}\DecValTok{1}\NormalTok{))}
+\NormalTok{end.time }\OtherTok{\textless{}{-}} \FunctionTok{Sys.time}\NormalTok{()}
+\NormalTok{end.time }\SpecialCharTok{{-}}\NormalTok{ start.time}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Time difference of 2.24403 mins
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#Answer Q2{-}4}
+\NormalTok{MLE\_res}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## $par
+## (Intercept) (Intercept)           x 
+##   7.2577831   7.8409494   0.0383363 
+## 
+## $value
+## [1] -1074.95
+## 
+## $counts
+## function gradient 
+##       55       10 
+## 
+## $convergence
+## [1] 0
+## 
+## $message
+## NULL
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{print}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"alpha kinoko hat: "}\NormalTok{, MLE\_res}\SpecialCharTok{$}\NormalTok{par[}\DecValTok{1}\NormalTok{]))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "alpha kinoko hat:  7.2577830856353"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{print}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"alpha takenoko hat: "}\NormalTok{, MLE\_res}\SpecialCharTok{$}\NormalTok{par[}\DecValTok{2}\NormalTok{]))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "alpha takenoko hat:  7.8409493751478"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{print}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"beta: "}\NormalTok{, MLE\_res}\SpecialCharTok{$}\NormalTok{par[}\DecValTok{3}\NormalTok{]))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "beta:  0.0383362818089461"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Robustness check about initial value}
+
+\ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \FunctionTok{seq}\NormalTok{(}\AttributeTok{from =} \DecValTok{0}\NormalTok{, }\AttributeTok{to =} \FloatTok{0.5}\NormalTok{, }\AttributeTok{by =} \FloatTok{0.5}\NormalTok{)) \{}
+\NormalTok{  initial\_theta }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(i, i, i)}
+  \FunctionTok{print}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"Initial theta: "}\NormalTok{, }\FunctionTok{c}\NormalTok{(i, i, i)))}
+\NormalTok{  start.time }\OtherTok{\textless{}{-}} \FunctionTok{Sys.time}\NormalTok{()}
+\NormalTok{  MLE\_res }\OtherTok{\textless{}{-}} \FunctionTok{optim}\NormalTok{(}\AttributeTok{par =}\NormalTok{ initial\_theta, }\AttributeTok{fn =}\NormalTok{ compute\_loglikelihood, }\AttributeTok{df =}\NormalTok{ kntk\_df, }\AttributeTok{method=}\StringTok{\textquotesingle{}BFGS\textquotesingle{}}\NormalTok{, }\AttributeTok{control =} \FunctionTok{list}\NormalTok{(}\AttributeTok{fnscale =} \SpecialCharTok{{-}}\DecValTok{1}\NormalTok{))}
+\NormalTok{  end.time }\OtherTok{\textless{}{-}} \FunctionTok{Sys.time}\NormalTok{()}
+\NormalTok{  end.time }\SpecialCharTok{{-}}\NormalTok{ start.time}
+  \FunctionTok{print}\NormalTok{(MLE\_res)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "Initial theta:  0" "Initial theta:  0" "Initial theta:  0"
+## $par
+## [1] 7.2576237 7.8405483 0.0383394
+## 
+## $value
+## [1] -1074.95
+## 
+## $counts
+## function gradient 
+##       59       10 
+## 
+## $convergence
+## [1] 0
+## 
+## $message
+## NULL
+## 
+## [1] "Initial theta:  0.5" "Initial theta:  0.5" "Initial theta:  0.5"
+## $par
+## [1] 7.3065392 7.8904109 0.0385854
+## 
+## $value
+## [1] -1074.94
+## 
+## $counts
+## function gradient 
+##      121       12 
+## 
+## $convergence
+## [1] 0
+## 
+## $message
+## NULL
+\end{verbatim}
 
 \end{document}
