@@ -91,6 +91,20 @@
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 \setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
 \ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
 \fi
@@ -119,8 +133,8 @@
 
 \begin{verbatim}
 ##          used (Mb) gc trigger (Mb) max used (Mb)
-## Ncells 475915 25.5    1027651 54.9   664211 35.5
-## Vcells 892251  6.9    8388608 64.0  1814572 13.9
+## Ncells 476581 25.5    1029462   55   664394 35.5
+## Vcells 894613  6.9    8388608   64  1814579 13.9
 \end{verbatim}
 
 \begin{Shaded}
@@ -138,8 +152,15 @@
 \begin{Shaded}
 \begin{Highlighting}[]
 \NormalTok{pacman}\SpecialCharTok{::}\FunctionTok{p\_load}\NormalTok{(}
+\NormalTok{  plm,}
+\NormalTok{  ggplot2,}
 \NormalTok{  tidyverse,}
-\NormalTok{  fixest}
+\NormalTok{  fixest,}
+\NormalTok{  knitr,}
+\NormalTok{  kableExtra,}
+\NormalTok{  tidymodels,}
+\NormalTok{  modelsummary,}
+\NormalTok{  ggplot2}
 \NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
@@ -198,10 +219,17 @@
 \NormalTok{Mat\_y }\OtherTok{\textless{}{-}} \FunctionTok{as.matrix}\NormalTok{(df[, }\DecValTok{3}\NormalTok{])}
 
 \CommentTok{\# Computing beta\_hat}
-\NormalTok{numerical\_beta }\OtherTok{\textless{}{-}} \FunctionTok{solve}\NormalTok{(}\FunctionTok{t}\NormalTok{(Mat\_X) }\SpecialCharTok{\%*\%}\NormalTok{ Mat\_X) }\SpecialCharTok{\%*\%}\NormalTok{ (}\FunctionTok{t}\NormalTok{(Mat\_X) }\SpecialCharTok{\%*\%}\NormalTok{ Mat\_y) }
+\NormalTok{analytical\_beta }\OtherTok{\textless{}{-}} \FunctionTok{solve}\NormalTok{(}\FunctionTok{t}\NormalTok{(Mat\_X) }\SpecialCharTok{\%*\%}\NormalTok{ Mat\_X) }\SpecialCharTok{\%*\%}\NormalTok{ (}\FunctionTok{t}\NormalTok{(Mat\_X) }\SpecialCharTok{\%*\%}\NormalTok{ Mat\_y) }
+\end{Highlighting}
+\end{Shaded}
 
+\hypertarget{answer-to-q1-1}{%
+\subsection{Answer to Q1-1}\label{answer-to-q1-1}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
 \DocumentationTok{\#\#\# Q1 Answer }\AlertTok{\#\#\#}
-\FunctionTok{print}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"beta\_0: "}\NormalTok{, numerical\_beta[}\DecValTok{1}\NormalTok{]))}
+\FunctionTok{print}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"beta\_0: "}\NormalTok{, analytical\_beta[}\DecValTok{1}\NormalTok{]))}
 \end{Highlighting}
 \end{Shaded}
 
@@ -211,13 +239,46 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\FunctionTok{print}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"beta\_1: "}\NormalTok{, numerical\_beta[}\DecValTok{2}\NormalTok{]))}
+\FunctionTok{print}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"beta\_1: "}\NormalTok{, analytical\_beta[}\DecValTok{2}\NormalTok{]))}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
 ## [1] "beta_1:  0.108648664436512"
 \end{verbatim}
+
+\hypertarget{result-table-in-q1-1}{%
+\subsection{Result table in Q1-1}\label{result-table-in-q1-1}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Create the result table}
+\NormalTok{coefs\_Q1\_1 }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
+  \AttributeTok{variable =} \FunctionTok{c}\NormalTok{(}\StringTok{"Constant"}\NormalTok{,  }\StringTok{"educ"}\NormalTok{, }\StringTok{"Num.Obs."}\NormalTok{),}
+  \AttributeTok{OLS\_model =} \FunctionTok{c}\NormalTok{(}\FunctionTok{format}\NormalTok{(analytical\_beta[}\DecValTok{1}\NormalTok{], }\AttributeTok{digits =} \DecValTok{6}\NormalTok{),}
+               \FunctionTok{format}\NormalTok{(analytical\_beta[}\DecValTok{2}\NormalTok{], }\AttributeTok{digits =} \DecValTok{6}\NormalTok{),}
+               \FunctionTok{format}\NormalTok{(}\FunctionTok{nrow}\NormalTok{(df), }\AttributeTok{digits =} \DecValTok{1}\NormalTok{))}
+\NormalTok{)}
+
+\CommentTok{\# result the table}
+\NormalTok{coefs\_table\_Q1\_1  }\OtherTok{\textless{}{-}} \FunctionTok{kable}\NormalTok{(coefs\_Q1\_1, }
+                           \AttributeTok{caption =} \StringTok{"Analytical OLS estimation Result"}\NormalTok{,}
+                           \AttributeTok{align =} \FunctionTok{c}\NormalTok{(}\StringTok{"l"}\NormalTok{, }\StringTok{"c"}\NormalTok{))  }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{full\_width =} \ConstantTok{FALSE}\NormalTok{) }
+\NormalTok{coefs\_table\_Q1\_1 }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[t]{lc}
+\caption{\label{tab:unnamed-chunk-4}Analytical OLS estimation Result}\\
+\toprule
+variable & OLS\_model\\
+\midrule
+Constant & -0.185197\\
+educ & 0.108649\\
+Num.Obs. & 428\\
+\bottomrule
+\end{longtable}
 
 \hypertarget{question-1-2}{%
 \section{Question 1-2}\label{question-1-2}}
@@ -265,46 +326,85 @@
 ## NULL
 \end{verbatim}
 
+\hypertarget{answer-to-q1-2}{%
+\subsection{Answer to Q1-2}\label{answer-to-q1-2}}
+
 \begin{Shaded}
 \begin{Highlighting}[]
 \DocumentationTok{\#\#\# Q2 Answer }\AlertTok{\#\#\#}
-\FunctionTok{print}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"Numerical beta\_0: "}\NormalTok{, numerical\_beta[}\DecValTok{1}\NormalTok{]))}
+\FunctionTok{print}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"Analytical beta\_0: "}\NormalTok{, analytical\_beta[}\DecValTok{1}\NormalTok{]))}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
-## [1] "Numerical beta_0:  -0.185196923871551"
+## [1] "Analytical beta_0:  -0.185196923871551"
 \end{verbatim}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\FunctionTok{print}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"Analytical beta\_0: "}\NormalTok{, result}\SpecialCharTok{$}\NormalTok{par[}\DecValTok{1}\NormalTok{]))}
+\FunctionTok{print}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"Numerical beta\_0: "}\NormalTok{, result}\SpecialCharTok{$}\NormalTok{par[}\DecValTok{1}\NormalTok{]))}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
-## [1] "Analytical beta_0:  -0.184885798843542"
+## [1] "Numerical beta_0:  -0.184885798843542"
 \end{verbatim}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\FunctionTok{print}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"Numerical beta\_1: "}\NormalTok{, numerical\_beta[}\DecValTok{2}\NormalTok{]))}
+\FunctionTok{print}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"Analytical beta\_1: "}\NormalTok{, analytical\_beta[}\DecValTok{2}\NormalTok{]))}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
-## [1] "Numerical beta_1:  0.108648664436512"
+## [1] "Analytical beta_1:  0.108648664436512"
 \end{verbatim}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\FunctionTok{print}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"Analytical beta\_1: "}\NormalTok{, result}\SpecialCharTok{$}\NormalTok{par[}\DecValTok{2}\NormalTok{]))}
+\FunctionTok{print}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"Numerical beta\_1: "}\NormalTok{, result}\SpecialCharTok{$}\NormalTok{par[}\DecValTok{2}\NormalTok{]))}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
-## [1] "Analytical beta_1:  0.108632651079137"
+## [1] "Numerical beta_1:  0.108632651079137"
 \end{verbatim}
+
+\hypertarget{result-table-in-q1-2}{%
+\subsection{Result table in Q1-2}\label{result-table-in-q1-2}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Create the result table}
+\NormalTok{coefs\_Q1\_2 }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
+  \AttributeTok{variable =} \FunctionTok{c}\NormalTok{(}\StringTok{"Constant"}\NormalTok{,  }\StringTok{"educ"}\NormalTok{, }\StringTok{"Num.Obs."}\NormalTok{),}
+  \AttributeTok{Analycal\_OLS =} \FunctionTok{c}\NormalTok{(}\FunctionTok{format}\NormalTok{(analytical\_beta[}\DecValTok{1}\NormalTok{], }\AttributeTok{digits =} \DecValTok{6}\NormalTok{),}
+                    \FunctionTok{format}\NormalTok{(analytical\_beta[}\DecValTok{2}\NormalTok{], }\AttributeTok{digits =} \DecValTok{6}\NormalTok{),}
+                    \FunctionTok{format}\NormalTok{(}\FunctionTok{nrow}\NormalTok{(df), }\AttributeTok{digits =} \DecValTok{1}\NormalTok{)),}
+  \AttributeTok{Numerical\_OLS =} \FunctionTok{c}\NormalTok{(}\FunctionTok{format}\NormalTok{(result}\SpecialCharTok{$}\NormalTok{par[}\DecValTok{1}\NormalTok{], }\AttributeTok{digits =} \DecValTok{6}\NormalTok{),}
+                \FunctionTok{format}\NormalTok{(result}\SpecialCharTok{$}\NormalTok{par[}\DecValTok{2}\NormalTok{], }\AttributeTok{digits =} \DecValTok{6}\NormalTok{),}
+                \FunctionTok{format}\NormalTok{(}\FunctionTok{nrow}\NormalTok{(df), }\AttributeTok{digits =} \DecValTok{1}\NormalTok{))}
+\NormalTok{)}
+
+\CommentTok{\# result table}
+\NormalTok{coefs\_table\_Q1\_2  }\OtherTok{\textless{}{-}} \FunctionTok{kable}\NormalTok{(coefs\_Q1\_2, }
+                           \AttributeTok{caption =} \StringTok{"OLS estimation Result"}\NormalTok{,}
+                           \AttributeTok{align =} \FunctionTok{c}\NormalTok{(}\StringTok{"l"}\NormalTok{, }\StringTok{"c"}\NormalTok{, }\StringTok{"c"}\NormalTok{))  }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{full\_width =} \ConstantTok{FALSE}\NormalTok{) }
+\NormalTok{coefs\_table\_Q1\_2 }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[t]{lcc}
+\caption{\label{tab:unnamed-chunk-7}OLS estimation Result}\\
+\toprule
+variable & Analycal\_OLS & Numerical\_OLS\\
+\midrule
+Constant & -0.185197 & -0.184886\\
+educ & 0.108649 & 0.108633\\
+Num.Obs. & 428 & 428\\
+\bottomrule
+\end{longtable}
 
 \hypertarget{question-1-3}{%
 \section{Question 1-3}\label{question-1-3}}
@@ -327,7 +427,7 @@
 \NormalTok{\}}
 
 \NormalTok{S\_xx }\OtherTok{\textless{}{-}}\NormalTok{ (}\DecValTok{1}\SpecialCharTok{/}\FunctionTok{nrow}\NormalTok{(df)) }\SpecialCharTok{*}\NormalTok{ (}\FunctionTok{t}\NormalTok{(Mat\_X) }\SpecialCharTok{\%*\%}\NormalTok{ Mat\_X)}
-\NormalTok{S\_hat }\OtherTok{\textless{}{-}} \FunctionTok{compute\_S\_hat}\NormalTok{(numerical\_beta, df)}
+\NormalTok{S\_hat }\OtherTok{\textless{}{-}} \FunctionTok{compute\_S\_hat}\NormalTok{(analytical\_beta, df)}
 
 \CommentTok{\# Computing the asymptotic variance estimator}
 \NormalTok{Avar\_est }\OtherTok{\textless{}{-}} \FunctionTok{solve}\NormalTok{(S\_xx) }\SpecialCharTok{\%*\%}\NormalTok{ S\_hat }\SpecialCharTok{\%*\%} \FunctionTok{solve}\NormalTok{(S\_xx)}
@@ -335,7 +435,14 @@
 \CommentTok{\# Computing the asymptotic SE for beta\_0 and beta\_1}
 \NormalTok{Asy\_std\_beta\_0 }\OtherTok{\textless{}{-}} \FunctionTok{sqrt}\NormalTok{ ((}\DecValTok{1}\SpecialCharTok{/}\FunctionTok{nrow}\NormalTok{(df)) }\SpecialCharTok{*}\NormalTok{ Avar\_est[}\DecValTok{1}\NormalTok{])}
 \NormalTok{Asy\_std\_beta\_1 }\OtherTok{\textless{}{-}} \FunctionTok{sqrt}\NormalTok{ ((}\DecValTok{1}\SpecialCharTok{/}\FunctionTok{nrow}\NormalTok{(df)) }\SpecialCharTok{*}\NormalTok{ Avar\_est[}\DecValTok{4}\NormalTok{])}
+\end{Highlighting}
+\end{Shaded}
 
+\hypertarget{answer-to-q1-3}{%
+\subsection{Answer to Q1-3}\label{answer-to-q1-3}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
 \DocumentationTok{\#\#\# Q3 Answer }\AlertTok{\#\#\#}
 \FunctionTok{print}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"Asymptotic standard error beta 0: "}\NormalTok{, Asy\_std\_beta\_0))}
 \end{Highlighting}
@@ -354,6 +461,42 @@
 \begin{verbatim}
 ## [1] "Asymptotic standard error beta 1:  0.0133839371539942"
 \end{verbatim}
+
+\hypertarget{result-table-in-q1-3}{%
+\subsection{Result table in Q1-3}\label{result-table-in-q1-3}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Create the result table}
+\NormalTok{coefs\_Q1\_3 }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
+  \AttributeTok{variable =} \FunctionTok{c}\NormalTok{(}\StringTok{"Constant"}\NormalTok{, }\StringTok{""}\NormalTok{,  }\StringTok{"educ"}\NormalTok{, }\StringTok{""}\NormalTok{, }\StringTok{"Num.Obs."}\NormalTok{),}
+  \AttributeTok{IV\_model =} \FunctionTok{c}\NormalTok{(analytical\_beta[}\DecValTok{1}\NormalTok{],}
+               \FunctionTok{paste}\NormalTok{(}\StringTok{"("}\NormalTok{, Asy\_std\_beta\_0, }\StringTok{")"}\NormalTok{),  }
+\NormalTok{               analytical\_beta[}\DecValTok{2}\NormalTok{], }
+               \FunctionTok{paste}\NormalTok{(}\StringTok{"("}\NormalTok{, Asy\_std\_beta\_1, }\StringTok{")"}\NormalTok{),}
+               \FunctionTok{nrow}\NormalTok{(df))}
+\NormalTok{)}
+
+\NormalTok{coefs\_table\_Q1\_3  }\OtherTok{\textless{}{-}} \FunctionTok{kable}\NormalTok{(coefs\_Q1\_3, }
+                           \AttributeTok{caption =} \StringTok{"Analytical OLS estimation Result"}\NormalTok{,}
+                           \AttributeTok{align =} \FunctionTok{c}\NormalTok{(}\StringTok{"l"}\NormalTok{, }\StringTok{"c"}\NormalTok{))  }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{full\_width =} \ConstantTok{FALSE}\NormalTok{) }
+\NormalTok{coefs\_table\_Q1\_3}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[t]{lc}
+\caption{\label{tab:unnamed-chunk-10}Analytical OLS estimation Result}\\
+\toprule
+variable & IV\_model\\
+\midrule
+Constant & -0.185196923871551\\
+ & ( 0.170348665439351 )\\
+educ & 0.108648664436512\\
+ & ( 0.0133839371539942 )\\
+Num.Obs. & 428\\
+\bottomrule
+\end{longtable}
 
 \hypertarget{question-1-6}{%
 \section{Question 1-6}\label{question-1-6}}
@@ -408,10 +551,15 @@
 \CommentTok{\# Computing the asymptotic SE for beta\_0 and beta\_1}
 \NormalTok{Asy\_std\_beta\_IV\_0 }\OtherTok{\textless{}{-}} \FunctionTok{sqrt}\NormalTok{ ((}\DecValTok{1}\SpecialCharTok{/}\FunctionTok{nrow}\NormalTok{(df)) }\SpecialCharTok{*}\NormalTok{ Avar\_est\_IV[}\DecValTok{1}\NormalTok{])}
 \NormalTok{Asy\_std\_beta\_IV\_1 }\OtherTok{\textless{}{-}} \FunctionTok{sqrt}\NormalTok{ ((}\DecValTok{1}\SpecialCharTok{/}\FunctionTok{nrow}\NormalTok{(df)) }\SpecialCharTok{*}\NormalTok{ Avar\_est\_IV[}\DecValTok{4}\NormalTok{])}
+\end{Highlighting}
+\end{Shaded}
 
-\DocumentationTok{\#\#\# Q6 Answer }\AlertTok{\#\#\#}
+\hypertarget{answer-to-q1-6}{%
+\subsection{Answer to Q1-6}\label{answer-to-q1-6}}
 
-\CommentTok{\# print beta IV}
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\#\# Q3 Answer }\AlertTok{\#\#\#}
 \FunctionTok{print}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"Numerical beta\_IV\_0: "}\NormalTok{, numerical\_beta\_IV[}\DecValTok{1}\NormalTok{]))}
 \end{Highlighting}
 \end{Shaded}
@@ -432,7 +580,6 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Print Asy SE for beta}
 \FunctionTok{print}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"Asymptotic standard error beta IV 0: "}\NormalTok{, Asy\_std\_beta\_IV\_0))}
 \end{Highlighting}
 \end{Shaded}
@@ -450,6 +597,43 @@
 \begin{verbatim}
 ## [1] "Asymptotic standard error beta IV 1:  0.0350595718842378"
 \end{verbatim}
+
+\hypertarget{result-table-in-q1-6}{%
+\subsection{Result table in Q1-6}\label{result-table-in-q1-6}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{coefs\_Q1\_6 }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
+  \AttributeTok{variable =} \FunctionTok{c}\NormalTok{(}\StringTok{"Constant"}\NormalTok{, }\StringTok{""}\NormalTok{,  }\StringTok{"educ"}\NormalTok{, }\StringTok{""}\NormalTok{, }\StringTok{"Num.Obs."}\NormalTok{),}
+  \AttributeTok{IV\_model =} \FunctionTok{c}\NormalTok{(numerical\_beta\_IV[}\DecValTok{1}\NormalTok{],}
+            \FunctionTok{paste}\NormalTok{(}\StringTok{"("}\NormalTok{, Asy\_std\_beta\_IV\_0, }\StringTok{")"}\NormalTok{),  }
+\NormalTok{            numerical\_beta\_IV[}\DecValTok{2}\NormalTok{], }
+            \FunctionTok{paste}\NormalTok{(}\StringTok{"("}\NormalTok{, Asy\_std\_beta\_IV\_1, }\StringTok{")"}\NormalTok{),}
+            \FunctionTok{nrow}\NormalTok{(df))}
+\NormalTok{)}
+
+\CommentTok{\# result table}
+\NormalTok{coefs\_table\_Q1\_6  }\OtherTok{\textless{}{-}} \FunctionTok{kable}\NormalTok{(coefs\_Q1\_6, }
+      \AttributeTok{caption =} \StringTok{"IV estimation Result"}\NormalTok{,}
+      \AttributeTok{align =} \FunctionTok{c}\NormalTok{(}\StringTok{"l"}\NormalTok{, }\StringTok{"c"}\NormalTok{)) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{full\_width =} \ConstantTok{FALSE}\NormalTok{) }
+
+\NormalTok{coefs\_table\_Q1\_6 }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[t]{lc}
+\caption{\label{tab:unnamed-chunk-13}IV estimation Result}\\
+\toprule
+variable & IV\_model\\
+\midrule
+Constant & 0.441103500025292\\
+ & ( 0.44505826449563 )\\
+educ & 0.0591734740659255\\
+ & ( 0.0350595718842378 )\\
+Num.Obs. & 428\\
+\bottomrule
+\end{longtable}
 
 \hypertarget{kinoko-takenoko-data}{%
 \subsubsection{Kinoko Takenoko Data}\label{kinoko-takenoko-data}}
@@ -582,8 +766,11 @@
 \end{Shaded}
 
 \begin{verbatim}
-## Time difference of 2.24403 mins
+## Time difference of 1.83569 mins
 \end{verbatim}
+
+\hypertarget{answer-to-q2-4}{%
+\subsection{Answer to Q2-4}\label{answer-to-q2-4}}
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -641,10 +828,47 @@
 ## [1] "beta:  0.0383362818089461"
 \end{verbatim}
 
+\hypertarget{result-table-in-q2-4}{%
+\subsection{Result table in Q2-4}\label{result-table-in-q2-4}}
+
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Robustness check about initial value}
+\CommentTok{\# Create result table}
+\NormalTok{coefs\_Q2\_4 }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
+  \AttributeTok{variable =} \FunctionTok{c}\NormalTok{(}\StringTok{"alpha kinoko"}\NormalTok{,  }\StringTok{"alpha takenoko"}\NormalTok{, }\StringTok{"beta"}\NormalTok{, }\StringTok{"Num.Obs."}\NormalTok{),}
+  \AttributeTok{estimates =} \FunctionTok{c}\NormalTok{(}\FunctionTok{format}\NormalTok{(MLE\_res}\SpecialCharTok{$}\NormalTok{par[}\DecValTok{1}\NormalTok{], }\AttributeTok{digits =} \DecValTok{6}\NormalTok{),}
+                   \FunctionTok{format}\NormalTok{(MLE\_res}\SpecialCharTok{$}\NormalTok{par[}\DecValTok{2}\NormalTok{], }\AttributeTok{digits =} \DecValTok{6}\NormalTok{),}
+                   \FunctionTok{format}\NormalTok{(MLE\_res}\SpecialCharTok{$}\NormalTok{par[}\DecValTok{3}\NormalTok{], }\AttributeTok{digits =} \DecValTok{6}\NormalTok{),}
+                   \FunctionTok{format}\NormalTok{(}\FunctionTok{nrow}\NormalTok{(kntk\_df), }\AttributeTok{digits =} \DecValTok{1}\NormalTok{))}
+\NormalTok{)}
 
+\CommentTok{\# result table}
+\NormalTok{coefs\_table\_Q2\_4  }\OtherTok{\textless{}{-}} \FunctionTok{kable}\NormalTok{(coefs\_Q2\_4, }
+                           \AttributeTok{caption =} \StringTok{"Estimation Result"}\NormalTok{,}
+                           \AttributeTok{align =} \FunctionTok{c}\NormalTok{(}\StringTok{"l"}\NormalTok{, }\StringTok{"c"}\NormalTok{))  }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{full\_width =} \ConstantTok{FALSE}\NormalTok{) }
+\NormalTok{coefs\_table\_Q2\_4}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[t]{lc}
+\caption{\label{tab:unnamed-chunk-17}Estimation Result}\\
+\toprule
+variable & estimates\\
+\midrule
+alpha kinoko & 7.25778\\
+alpha takenoko & 7.84095\\
+beta & 0.0383363\\
+Num.Obs. & 1110\\
+\bottomrule
+\end{longtable}
+
+\hypertarget{robustness-check-about-initial-value}{%
+\subsection{Robustness check about initial
+value}\label{robustness-check-about-initial-value}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
 \ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \FunctionTok{seq}\NormalTok{(}\AttributeTok{from =} \DecValTok{0}\NormalTok{, }\AttributeTok{to =} \FloatTok{0.5}\NormalTok{, }\AttributeTok{by =} \FloatTok{0.5}\NormalTok{)) \{}
 \NormalTok{  initial\_theta }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(i, i, i)}
   \FunctionTok{print}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"Initial theta: "}\NormalTok{, }\FunctionTok{c}\NormalTok{(i, i, i)))}
@@ -692,5 +916,107 @@
 ## $message
 ## NULL
 \end{verbatim}
+
+\hypertarget{question-3-2}{%
+\section{Question 3-2}\label{question-3-2}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\#\#\#\# Question 3{-}2 \#\#\#\#\#}
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{0}\NormalTok{)}
+\NormalTok{mu }\OtherTok{\textless{}{-}} \DecValTok{2}
+\NormalTok{sigma }\OtherTok{\textless{}{-}} \FunctionTok{sqrt}\NormalTok{(}\DecValTok{2}\NormalTok{)}
+\NormalTok{R }\OtherTok{\textless{}{-}} \DecValTok{1000}
+
+\CommentTok{\# Define Monte Carlo simulation function}
+\NormalTok{compute\_E\_X2\_hat }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(R) \{}
+\NormalTok{  nu\_vec }\OtherTok{\textless{}{-}} \FunctionTok{rnorm}\NormalTok{(R, }\DecValTok{0}\NormalTok{, }\DecValTok{1}\NormalTok{) }\CommentTok{\# fixed by seed}
+
+\NormalTok{  E\_X2\_hat }\OtherTok{=} \DecValTok{0}
+  \ControlFlowTok{for}\NormalTok{ (nu\_r }\ControlFlowTok{in}\NormalTok{ nu\_vec) \{}
+\NormalTok{    E\_X2\_hat }\OtherTok{=}\NormalTok{ E\_X2\_hat }\SpecialCharTok{+}\NormalTok{ (mu }\SpecialCharTok{+}\NormalTok{ sigma }\SpecialCharTok{*}\NormalTok{ nu\_r)}\SpecialCharTok{\^{}}\DecValTok{2}
+\NormalTok{  \}}
+  
+\NormalTok{  E\_X2\_hat }\OtherTok{\textless{}{-}}\NormalTok{ (}\DecValTok{1}\SpecialCharTok{/}\NormalTok{ R) }\SpecialCharTok{*}\NormalTok{  E\_X2\_hat}
+  \FunctionTok{return}\NormalTok{(E\_X2\_hat)}
+\NormalTok{\} }
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{answer-to-q2-4-1}{%
+\subsection{Answer to Q2-4}\label{answer-to-q2-4-1}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\#\#\#\# Answer Q3{-}2 \#\#\#\#\#}
+\NormalTok{res\_E\_X2\_hat }\OtherTok{\textless{}{-}} \FunctionTok{compute\_E\_X2\_hat}\NormalTok{(R)}
+\FunctionTok{print}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"estimated E[X\^{}2]: "}\NormalTok{, res\_E\_X2\_hat))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "estimated E[X^2]:  5.90099084642978"
+\end{verbatim}
+
+\hypertarget{result-table-in-q2-4-1}{%
+\subsection{Result table in Q2-4}\label{result-table-in-q2-4-1}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Create result table}
+\NormalTok{coefs\_Q3\_2 }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
+  \AttributeTok{variable =} \FunctionTok{c}\NormalTok{(}\StringTok{"E[X\^{}2]"}\NormalTok{,  }\StringTok{"R"}\NormalTok{),}
+  \AttributeTok{estimates =} \FunctionTok{c}\NormalTok{(}\FunctionTok{format}\NormalTok{(res\_E\_X2\_hat, }\AttributeTok{digits =} \DecValTok{6}\NormalTok{),}
+                \FunctionTok{format}\NormalTok{(R, }\AttributeTok{digits =} \DecValTok{1}\NormalTok{))}
+\NormalTok{)}
+
+\NormalTok{coefs\_table\_Q3\_2  }\OtherTok{\textless{}{-}} \FunctionTok{kable}\NormalTok{(coefs\_Q3\_2, }
+                           \AttributeTok{caption =} \StringTok{"Estimation Result"}\NormalTok{,}
+                           \AttributeTok{align =} \FunctionTok{c}\NormalTok{(}\StringTok{"l"}\NormalTok{, }\StringTok{"c"}\NormalTok{))  }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{full\_width =} \ConstantTok{FALSE}\NormalTok{) }
+\NormalTok{coefs\_table\_Q3\_2}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[t]{lc}
+\caption{\label{tab:unnamed-chunk-21}Estimation Result}\\
+\toprule
+variable & estimates\\
+\midrule
+E[X\textasciicircum{}2] & 5.90099\\
+R & 1000\\
+\bottomrule
+\end{longtable}
+
+\hypertarget{answer-to-question-3-2-graph-part}{%
+\subsubsection{Answer to Question 3-2: Graph
+Part}\label{answer-to-question-3-2-graph-part}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# check dependency on the number of R}
+\NormalTok{res\_df }\OtherTok{=} \FunctionTok{data.frame}\NormalTok{(}\FunctionTok{matrix}\NormalTok{(}\AttributeTok{ncol =} \DecValTok{2}\NormalTok{, }\AttributeTok{nrow =} \DecValTok{0}\NormalTok{))}
+\FunctionTok{colnames}\NormalTok{(res\_df) }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"R"}\NormalTok{, }\StringTok{"estimated\_E\_X2"}\NormalTok{)}
+
+\NormalTok{i }\OtherTok{=} \DecValTok{0}
+\ControlFlowTok{for}\NormalTok{ (r }\ControlFlowTok{in} \FunctionTok{seq}\NormalTok{(}\AttributeTok{from =} \DecValTok{100}\NormalTok{, }\AttributeTok{to =} \DecValTok{50000}\NormalTok{, }\AttributeTok{by =} \DecValTok{100}\NormalTok{)) \{}
+\NormalTok{  i }\OtherTok{=}\NormalTok{ i }\SpecialCharTok{+} \DecValTok{1}
+  
+\NormalTok{  res\_E\_X2\_hat\_r }\OtherTok{\textless{}{-}} \FunctionTok{compute\_E\_X2\_hat}\NormalTok{(r)}
+  
+  \CommentTok{\# Store result}
+\NormalTok{  res\_df[i, }\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ r}
+\NormalTok{  res\_df[i, }\DecValTok{2}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ res\_E\_X2\_hat\_r}
+\NormalTok{\}}
+
+\CommentTok{\# Plot R and estimates}
+\FunctionTok{ggplot}\NormalTok{(res\_df, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ R, }\AttributeTok{y =}\NormalTok{ estimated\_E\_X2)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_point}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{x =} \StringTok{"R"}\NormalTok{, }\AttributeTok{y =} \StringTok{"estimated\_E\_X2"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_minimal}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Homework1_files/figure-latex/unnamed-chunk-22-1.pdf}
 
 \end{document}

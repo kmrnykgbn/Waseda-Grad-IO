@@ -17,8 +17,15 @@ set.seed(1)
 options(digits=6) 
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(
+  plm,
+  ggplot2,
   tidyverse,
-  fixest
+  fixest,
+  knitr,
+  kableExtra,
+  tidymodels,
+  modelsummary,
+  ggplot2
 )
 ```
 
@@ -40,12 +47,33 @@ Mat_X <- as.matrix(cbind(const, df[, 1]))
 Mat_y <- as.matrix(df[, 3])
 
 # Computing beta_hat
-numerical_beta <- solve(t(Mat_X) %*% Mat_X) %*% (t(Mat_X) %*% Mat_y) 
+analytical_beta <- solve(t(Mat_X) %*% Mat_X) %*% (t(Mat_X) %*% Mat_y) 
+```
 
+## Answer to Q1-1
+```{r echo=TRUE, include=TRUE}
 ### Q1 Answer ###
-print(paste("beta_0: ", numerical_beta[1]))
-print(paste("beta_1: ", numerical_beta[2]))
+print(paste("beta_0: ", analytical_beta[1]))
+print(paste("beta_1: ", analytical_beta[2]))
+```
 
+## Result table in Q1-1
+```{r echo=TRUE, include=TRUE}
+# Create the result table
+coefs_Q1_1 <- data.frame(
+  variable = c("Constant",  "educ", "Num.Obs."),
+  OLS_model = c(format(analytical_beta[1], digits = 4),
+               format(analytical_beta[2], digits = 4),
+               format(nrow(df), digits = 1))
+)
+
+# result the table
+coefs_table_Q1_1  <- kable(coefs_Q1_1,
+                           format="latex",
+                           caption = "Analytical OLS estimation Result",
+                           align = c("l", "c"))  %>%
+  kable_styling(full_width = FALSE) 
+coefs_table_Q1_1 
 ```
 
 # Question 1-2
@@ -71,12 +99,37 @@ initial_theta <- c(0, 0)
 result <- optim(par = initial_theta, fn = compute_ols, df = df, method = "BFGS")
 result
 
-### Q2 Answer ###
-print(paste("Numerical beta_0: ", numerical_beta[1]))
-print(paste("Analytical beta_0: ", result$par[1]))
-print(paste("Numerical beta_1: ", numerical_beta[2]))
-print(paste("Analytical beta_1: ", result$par[2]))
+```
 
+## Answer to Q1-2
+```{r echo=TRUE, include=TRUE}
+### Q2 Answer ###
+print(paste("Analytical beta_0: ", analytical_beta[1]))
+print(paste("Numerical beta_0: ", result$par[1]))
+print(paste("Analytical beta_1: ", analytical_beta[2]))
+print(paste("Numerical beta_1: ", result$par[2]))
+```
+
+## Result table in Q1-2
+```{r echo=TRUE, include=TRUE}
+# Create the result table
+coefs_Q1_2 <- data.frame(
+  variable = c("Constant",  "educ", "Num.Obs."),
+  Analycal_OLS = c(format(analytical_beta[1], digits = 4),
+                    format(analytical_beta[2], digits = 4),
+                    format(nrow(df), digits = 1)),
+  Numerical_OLS = c(format(result$par[1], digits = 4),
+                format(result$par[2], digits = 4),
+                format(nrow(df), digits = 1))
+)
+
+# result table
+coefs_table_Q1_2  <- kable(coefs_Q1_2,
+                           format="latex",
+                           caption = "OLS estimation Result",
+                           align = c("l", "c", "c"))  %>%
+  kable_styling(full_width = FALSE) 
+coefs_table_Q1_2 
 ```
 
 # Question 1-3
@@ -98,7 +151,7 @@ compute_S_hat <- function(theta, df) {
 }
 
 S_xx <- (1/nrow(df)) * (t(Mat_X) %*% Mat_X)
-S_hat <- compute_S_hat(numerical_beta, df)
+S_hat <- compute_S_hat(analytical_beta, df)
 
 # Computing the asymptotic variance estimator
 Avar_est <- solve(S_xx) %*% S_hat %*% solve(S_xx)
@@ -107,11 +160,33 @@ Avar_est <- solve(S_xx) %*% S_hat %*% solve(S_xx)
 Asy_std_beta_0 <- sqrt ((1/nrow(df)) * Avar_est[1])
 Asy_std_beta_1 <- sqrt ((1/nrow(df)) * Avar_est[4])
 
+```
+
+## Answer to Q1-3
+```{r echo=TRUE, include=TRUE}
 ### Q3 Answer ###
 print(paste("Asymptotic standard error beta 0: ", Asy_std_beta_0))
 print(paste("Asymptotic standard error beta 1: ", Asy_std_beta_1))
+```
 
+## Result table in Q1-3
+```{r echo=TRUE, include=TRUE}
+# Create the result table
+coefs_Q1_3 <- data.frame(
+  variable = c("Constant", "",  "educ", "", "Num.Obs."),
+  OLS_model = c(format(analytical_beta[1], digits = 4),
+               paste("(", format(Asy_std_beta_0, digits = 4), ")"),  
+               format(analytical_beta[2], digits = 4), 
+               paste("(", format(Asy_std_beta_1, digits = 4), ")"),
+               nrow(df))
+)
 
+coefs_table_Q1_3  <- kable(coefs_Q1_3,
+                           format="latex",
+                           caption = "Analytical OLS estimation Result",
+                           align = c("l", "c"))  %>%
+  kable_styling(full_width = FALSE) 
+coefs_table_Q1_3
 ```
 
 # Question 1-6
@@ -155,16 +230,41 @@ Avar_est_IV <- edge_comp * epsilon_hat
 Asy_std_beta_IV_0 <- sqrt ((1/nrow(df)) * Avar_est_IV[1])
 Asy_std_beta_IV_1 <- sqrt ((1/nrow(df)) * Avar_est_IV[4])
 
-### Q6 Answer ###
+```
 
-# print beta IV
+## Answer to Q1-6
+```{r echo=TRUE, include=TRUE}
+### Q3 Answer ###
 print(paste("Numerical beta_IV_0: ", numerical_beta_IV[1]))
 print(paste("Numerical beta_IV_1: ", numerical_beta_IV[2]))
-
-# Print Asy SE for beta
 print(paste("Asymptotic standard error beta IV 0: ", Asy_std_beta_IV_0))
 print(paste("Asymptotic standard error beta IV 1: ", Asy_std_beta_IV_1))
+```
 
+## Result table in Q1-6
+```{r echo=TRUE, include=TRUE}
+coefs_Q1_6 <- data.frame(
+  variable = c("Constant", "",  "educ", "", "Num.Obs."),
+  OLS_model = c(format(analytical_beta[1], digits = 4),
+             paste("(", format(Asy_std_beta_0, digits = 4), ")"),  
+             format(analytical_beta[2], digits = 4), 
+             paste("(", format(Asy_std_beta_1, digits = 4), ")"),
+             nrow(df)),
+  IV_model = c(format(numerical_beta_IV[1], digits = 4),
+            paste("(", format(Asy_std_beta_IV_0, digits = 4), ")"),  
+            format(numerical_beta_IV[2], digits = 4), 
+            paste("(", format(Asy_std_beta_IV_1, digits = 4), ")"),
+            nrow(df))
+)
+
+# result table
+coefs_table_Q1_6  <- kable(coefs_Q1_6, 
+                           format="latex",
+                           caption = "IV estimation Result",
+                           align = c("l", "c", "c")) %>%
+                     kable_styling(full_width = FALSE) 
+
+coefs_table_Q1_6 
 ```
 
 ### Kinoko Takenoko Data
@@ -236,15 +336,39 @@ start.time <- Sys.time()
 MLE_res <- optim(par = initial_theta, fn = compute_loglikelihood, df = kntk_df, method='BFGS', control = list(fnscale = -1))
 end.time <- Sys.time()
 end.time - start.time
+```
 
+## Answer to Q2-4
+```{r echo=TRUE, include=TRUE}
 #Answer Q2-4
 MLE_res
 print(paste("alpha kinoko hat: ", MLE_res$par[1]))
 print(paste("alpha takenoko hat: ", MLE_res$par[2]))
 print(paste("beta: ", MLE_res$par[3]))
+```
 
-# Robustness check about initial value
+## Result table in Q2-4
+```{r echo=TRUE, include=TRUE}
+# Create result table
+coefs_Q2_4 <- data.frame(
+  variable = c("alpha kinoko",  "alpha takenoko", "beta", "Num.Obs."),
+  estimates = c(format(MLE_res$par[1], digits = 4),
+                   format(MLE_res$par[2], digits = 4),
+                   format(MLE_res$par[3], digits = 4),
+                   format(nrow(kntk_df), digits = 1))
+)
 
+# result table
+coefs_table_Q2_4  <- kable(coefs_Q2_4,
+                           format="latex",
+                           caption = "Estimation Result",
+                           align = c("l", "c"))  %>%
+  kable_styling(full_width = FALSE) 
+coefs_table_Q2_4
+```
+
+## Robustness check about initial value
+```{r echo=TRUE, include=TRUE}
 for (i in seq(from = 0, to = 0.5, by = 0.5)) {
   initial_theta <- c(i, i, i)
   print(paste("Initial theta: ", c(i, i, i)))
@@ -254,4 +378,76 @@ for (i in seq(from = 0, to = 0.5, by = 0.5)) {
   end.time - start.time
   print(MLE_res)
 }
+```
+
+
+# Question 3-2
+```{r echo=TRUE, include=TRUE}
+##### Question 3-2 #####
+set.seed(0)
+mu <- 2
+sigma <- sqrt(2)
+R <- 1000
+
+# Define Monte Carlo simulation function
+compute_E_X2_hat <- function(R) {
+  nu_vec <- rnorm(R, 0, 1) # fixed by seed
+
+  E_X2_hat = 0
+  for (nu_r in nu_vec) {
+    E_X2_hat = E_X2_hat + (mu + sigma * nu_r)^2
+  }
+  
+  E_X2_hat <- (1/ R) *  E_X2_hat
+  return(E_X2_hat)
+} 
+```
+
+## Answer to Q2-4
+```{r echo=TRUE, include=TRUE}
+##### Answer Q3-2 #####
+res_E_X2_hat <- compute_E_X2_hat(R)
+print(paste("estimated E[X^2]: ", res_E_X2_hat))
+```
+
+## Result table in Q2-4
+```{r echo=TRUE, include=TRUE}
+# Create result table
+coefs_Q3_2 <- data.frame(
+  variable = c("E[X^2]",  "R"),
+  estimates = c(format(res_E_X2_hat, digits = 6),
+                format(R, digits = 1))
+)
+
+coefs_table_Q3_2  <- kable(coefs_Q3_2,
+                           format="latex",
+                           caption = "Estimation Result when R = 1000",
+                           align = c("l", "c"))  %>%
+  kable_styling(full_width = FALSE) 
+coefs_table_Q3_2
+```
+
+### Answer to Question 3-2: Graph Part
+```{r echo=TRUE, include=TRUE}
+# check dependency on the number of R
+res_df = data.frame(matrix(ncol = 2, nrow = 0))
+colnames(res_df) <- c("R", "estimated_E_X2")
+
+i = 0
+for (r in seq(from = 100, to = 50000, by = 100)) {
+  i = i + 1
+  
+  res_E_X2_hat_r <- compute_E_X2_hat(r)
+  
+  # Store result
+  res_df[i, 1] <- r
+  res_df[i, 2] <- res_E_X2_hat_r
+}
+
+# Plot R and estimates
+ggplot(res_df, aes(x = R, y = estimated_E_X2)) +
+  geom_point() +
+  labs(x = "R", y = "estimated_E_X2") +
+  theme_minimal()
+ggsave("./figure/Q3_2_MC.pdf", device = "pdf")
 ```

@@ -1,17 +1,28 @@
 rm(list = ls())
 gc()
 set.seed(0)
+options(digits = 6)
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(
   plm,
   ggplot2,
   tidyverse,
   fixest,
+  knitr,
+  kableExtra,
   tidymodels,
-  modelsummary
+  modelsummary,
+  ggplot2
 )
 
 df <- read_csv("./input/MROZ_mini.csv")
+
+df <- df %>% mutate(kishida = 300)
+#For valitation
+model <- feols(lwage ~  1  + kishida, 
+               df, vcov="White"
+)
+etable(model)
 
 ##### Question 1 #####
 
@@ -20,12 +31,26 @@ Mat_X <- as.matrix(cbind(const, df[, 1]))
 Mat_y <- as.matrix(df[, 3])
 
 # Computing beta_hat
-numerical_beta <- solve(t(Mat_X) %*% Mat_X) %*% (t(Mat_X) %*% Mat_y) 
+analytical_beta <- solve(t(Mat_X) %*% Mat_X) %*% (t(Mat_X) %*% Mat_y) 
 
 ### Q1 Answer ###
-print(paste("beta_0: ", numerical_beta[1]))
-print(paste("beta_1: ", numerical_beta[2]))
+print(paste("beta_0: ", analytical_beta[1]))
+print(paste("beta_1: ", analytical_beta[2]))
 
+# Create result table
+coefs_Q1_1 <- data.frame(
+  variable = c("Constant",  "educ", "Num.Obs."),
+  OLS_model = c(format(analytical_beta[1], digits = 6),
+               format(analytical_beta[2], digits = 6),
+               format(nrow(df), digits = 1))
+)
+
+# result table
+coefs_table_Q1_1  <- kable(coefs_Q1_1, 
+                           caption = "Analytical OLS estimation Result",
+                           align = c("l", "c"))  %>%
+  kable_styling(full_width = FALSE) 
+coefs_table_Q1_1 
 
 ##### Question 2 #####
 
@@ -49,17 +74,34 @@ result <- optim(par = initial_theta, fn = compute_ols, df = df, method = "BFGS")
 result
 
 ### Q2 Answer ###
-print(paste("Numerical beta_0: ", numerical_beta[1]))
-print(paste("Analytical beta_0: ", result$par[1]))
-print(paste("Numerical beta_1: ", numerical_beta[2]))
-print(paste("Analytical beta_1: ", result$par[2]))
+print(paste("Analytical beta_0: ", analytical_beta[1]))
+print(paste("Numerical beta_0: ", result$par[1]))
+print(paste("Analytical beta_1: ", analytical_beta[2]))
+print(paste("Numerical beta_1: ", result$par[2]))
 
+# Create result table
+coefs_Q1_2 <- data.frame(
+  variable = c("Constant",  "educ", "Num.Obs."),
+  Analycal_OLS = c(format(analytical_beta[1], digits = 6),
+                    format(analytical_beta[2], digits = 6),
+                    format(nrow(df), digits = 1)),
+  Numerical_OLS = c(format(result$par[1], digits = 6),
+                format(result$par[2], digits = 6),
+                format(nrow(df), digits = 1))
+)
+
+# result table
+coefs_table_Q1_2  <- kable(coefs_Q1_2, 
+                           caption = "OLS estimation Result",
+                           align = c("l", "c", "c"))  %>%
+  kable_styling(full_width = FALSE) 
+coefs_table_Q1_2 
 
 ##### Question 3 #####
 
 # compute Asymptotic SE of OLS estimator
 
-# Hayashi p.123 calculating sample mean of S
+# calculating sample mean of S
 compute_S_hat <- function(theta, df) {
   S_hat <- matrix(0, ncol = 2, nrow = 2)
   for (i in 1:nrow(df)) {
@@ -73,7 +115,7 @@ compute_S_hat <- function(theta, df) {
 }
 
 S_xx <- (1/nrow(df)) * (t(Mat_X) %*% Mat_X)
-S_hat <- compute_S_hat(numerical_beta, df)
+S_hat <- compute_S_hat(analytical_beta, df)
 
 # Computing the asymptotic variance estimator
 Avar_est <- solve(S_xx) %*% S_hat %*% solve(S_xx)
@@ -85,6 +127,23 @@ Asy_std_beta_1 <- sqrt ((1/nrow(df)) * Avar_est[4])
 ### Q3 Answer ###
 print(paste("Asymptotic standard error beta 0: ", Asy_std_beta_0))
 print(paste("Asymptotic standard error beta 1: ", Asy_std_beta_1))
+
+coefs_Q1_3 <- data.frame(
+  variable = c("Constant", "",  "educ", "", "Num.Obs."),
+  IV_model = c(analytical_beta[1],
+               paste("(", Asy_std_beta_0, ")"),  
+               analytical_beta[2], 
+               paste("(", Asy_std_beta_1, ")"),
+               nrow(df))
+)
+
+# result table
+coefs_table_Q1_3  <- kable(coefs_Q1_3,
+                           format="latex",
+                           caption = "Analytical OLS estimation Result",
+                           align = c("l", "c"))  %>%
+  kable_styling(full_width = FALSE) 
+coefs_table_Q1_3 
 
 #For valitation
 model <- feols(lwage ~  1   + educ, 
@@ -137,14 +196,22 @@ Asy_std_beta_IV_0 <- sqrt ((1/nrow(df)) * Avar_est_IV[1])
 Asy_std_beta_IV_1 <- sqrt ((1/nrow(df)) * Avar_est_IV[4])
 
 ### Q6 Answer ###
+coefs_Q1_6 <- data.frame(
+  variable = c("Constant", "",  "educ", "", "Num.Obs."),
+  IV_model = c(numerical_beta_IV[1],
+            paste("(", Asy_std_beta_IV_0, ")"),  
+            numerical_beta_IV[2], 
+            paste("(", Asy_std_beta_IV_1, ")"),
+            nrow(df))
+)
 
-# print beta IV
-print(paste("Numerical beta_IV_0: ", numerical_beta_IV[1]))
-print(paste("Numerical beta_IV_1: ", numerical_beta_IV[2]))
+# result table
+coefs_table_Q1_6  <- kable(coefs_Q1_6, 
+      caption = "IV estimation Result",
+      align = c("l", "c"))  %>%
+  kable_styling(full_width = FALSE) 
 
-# Print Asy SE for beta
-print(paste("Asymptotic standard error beta IV 0: ", Asy_std_beta_IV_0))
-print(paste("Asymptotic standard error beta IV 1: ", Asy_std_beta_IV_1))
+coefs_table_Q1_6 
 
 #For valitation
 model <- feols(lwage ~  1  | educ ~ fatheduc, 
@@ -192,21 +259,19 @@ compute_loglikelihood <- function(theta, df) {
         filter(id == i & occasion == paste0("X", k)) %>%
         pull(prob)
       
+      # Sum of d_{ijk} P_{ijk} (Note that we skip calculation when d_{ijk} = 0)
       add_lf <- log(prob)
-      
       lf <- lf + add_lf
     }
   }
   return(lf)
 } 
 
-#For valitation
+# OLS estimation to get the initial value
 reg_df <- kntk_df %>% 
   mutate(y = if_else(choice == 1, 1, 0), 
          x = if_else(choice == 1, p_kino, 0),
          x = if_else(choice == 2, p_take, x))
-
-# OLS To get the initial value
 model <- feols(y ~  1   + x, 
                reg_df, vcov="White"
 )
@@ -225,6 +290,22 @@ print(paste("alpha kinoko hat: ", MLE_res$par[1]))
 print(paste("alpha takenoko hat: ", MLE_res$par[2]))
 print(paste("beta: ", MLE_res$par[3]))
 
+# Create result table
+coefs_Q2_4 <- data.frame(
+  variable = c("alpha kinoko",  "alpha takenoko", "beta", "Num.Obs."),
+  estimates = c(format(MLE_res$par[1], digits = 6),
+                   format(MLE_res$par[2], digits = 6),
+                   format(MLE_res$par[3], digits = 6),
+                   format(nrow(kntk_df), digits = 1))
+)
+
+# result table
+coefs_table_Q2_4  <- kable(coefs_Q2_4, 
+                           caption = "Estimation Result",
+                           align = c("l", "c"))  %>%
+  kable_styling(full_width = FALSE) 
+coefs_table_Q2_4
+
 # Robustness check about initial value
 
 #for (i in seq(from = 0, to = 1, by = 0.5)) {
@@ -238,13 +319,60 @@ print(paste("beta: ", MLE_res$par[3]))
 #}
 
 ##### Question 3-2 #####
+set.seed(0)
 mu <- 2
-sigma <- 2
-N <- 1000 # num of draw
+sigma <- sqrt(2)
+R <- 1000
 
-nu_vec <- rnorm(N, mu, sigma)
+# Define Monte Carlo simulation function
+compute_E_X2_hat <- function(R) {
+  nu_vec <- rnorm(R, 0, 1) # fixed by seed
 
-E_X2_hat = 0
-for (nu_r in nu_vec) {
-  E_X2_hat = E_X2_hat + (mu + sigma * nu_r)^2
+  E_X2_hat = 0
+  for (nu_r in nu_vec) {
+    E_X2_hat = E_X2_hat + (mu + sigma * nu_r)^2
+  }
+  
+  E_X2_hat <- (1/ R) *  E_X2_hat
+  return(E_X2_hat)
+} 
+
+##### Answer Q3-2 #####
+res_E_X2_hat <- compute_E_X2_hat(R)
+print(paste("estimated E[X^2]: ", res_E_X2_hat))
+
+# Create result table
+coefs_Q3_2 <- data.frame(
+  variable = c("E[X^2]",  "R"),
+  estimates = c(format(res_E_X2_hat, digits = 6),
+                format(R, digits = 1))
+)
+
+coefs_table_Q3_2  <- kable(coefs_Q3_2, 
+                           caption = "Estimation Result",
+                           align = c("l", "c"))  %>%
+  kable_styling(full_width = FALSE) 
+coefs_table_Q3_2
+
+# check dependency on the number of R
+res_df = data.frame(matrix(ncol = 2, nrow = 0))
+colnames(res_df) <- c("R", "estimated_E_X2")
+
+i = 0
+for (r in seq(from = 100, to = 50000, by = 100)) {
+  i = i + 1
+  
+  res_E_X2_hat_r <- compute_E_X2_hat(r)
+  
+  # Store result
+  res_df[i, 1] <- r
+  res_df[i, 2] <- res_E_X2_hat_r
 }
+
+
+
+# Plot R and estimates
+ggplot(res_df, aes(x = R, y = estimated_E_X2)) +
+  geom_point() +
+  labs(x = "R", y = "estimated_E_X2") +
+  theme_minimal()
