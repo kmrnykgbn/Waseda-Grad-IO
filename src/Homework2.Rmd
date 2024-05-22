@@ -57,7 +57,8 @@ print(stats)
 
 # to factor
 df <- orig_df |>
-  mutate(upc = factor(upc))
+  mutate(upc = factor(upc)) |>
+  arrange(week, store, upc)
 
 # compute market share
 df <- df |>
@@ -101,24 +102,42 @@ etable(model1_OLS, model1_IV, stage = 2, fitstat=~ . + ivfall + ivwaldall.p,
 ```{r echo=TRUE, include=TRUE}
 ### Q4 Answer ###
 
-# take median of own elasticity by upc
-own_elas_df <- df |>
+# compute own elasticity for each market
+own_elas_jt <- df |>
   select(upc, descrip, price, s_jt) |>
-  mutate(own_elas = model1_IV$coefficients["fit_price"] * price * (1 - s_jt)) |>
+  mutate(own_elas = model1_IV$coefficients["fit_price"] * price * (1 - s_jt)) 
+
+# take median of own elasticity by upc
+own_elas_df <- own_elas_jt |>
   group_by(upc, descrip) |>
   summarize(own_elas = median(own_elas))
 
-# take median of cross elasticity by upc
-cross_elas_df <- df |>
+# compute cross elasticity for each market
+cross_elas_jt <- df |>
   select(descrip, upc, price, s_jt) |>
-  mutate(cross_elas = (-1) * model1_IV$coefficients["fit_price"] * price * s_jt) |>
+  mutate(cross_elas = (-1) * model1_IV$coefficients["fit_price"] * price * s_jt)
+  
+# take median of cross elasticity by upc
+cross_elas_df <- cross_elas_jt |>
   group_by(upc, descrip) |>
   summarize(cross_elas = median(cross_elas))
 
 # create cross elasticity matrix
 J <- nrow(cross_elas_df)
-S_p <- matrix( rep(cross_elas_df$cross_elas, J), nrow = J, ncol = J)
-diag(S_p) <- own_elas_df$own_elas
+S_p_med <- matrix( rep(cross_elas_df$cross_elas, J), nrow = J, ncol = J)
+diag(S_p_med) <- own_elas_df$own_elas
+colnames(S_p_med) <- rownames(S_p_med) <- as.character(cross_elas_df$descrip)
+S_p_med
+```
+
+## Answer to Q5
+```{r echo=TRUE, include=TRUE}
+### Q5 Answer ###
+
+# create elasticity matrix S(p) for upc and market
+J <- nrow(cross_elas_jt)
+S_p <- matrix( rep(cross_elas_jt$cross_elas, J), nrow = J, ncol = J)
+diag(S_p) <- own_elas_jt$own_elas
 colnames(S_p) <- rownames(S_p) <- as.character(cross_elas_df$descrip)
 S_p
 ```
