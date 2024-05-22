@@ -1,0 +1,98 @@
+---
+title: "Appendix: Source code"
+output:
+  pdf_document:
+    latex_engine: pdflatex
+    keep_tex: true
+  html_document:
+    df_print: paged
+date: "2024-05-21"
+---
+
+```{r setup, include=TRUE, echo=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls())
+gc()
+set.seed(1)
+options(digits=6) 
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(
+  plm,
+  ggplot2,
+  tidyverse,
+  fixest,
+  knitr,
+  kableExtra,
+  tidymodels,
+  modelsummary,
+  ggplot2,
+  skimr
+)
+```
+
+### Data
+```{r echo=TRUE, include=TRUE}
+
+orig_df <- read_csv("./input/WSDR.csv")
+head(orig_df, 30)
+```
+
+
+## Answer to Q1
+```{r echo=TRUE, include=TRUE}
+### Q1 Answer ###
+stats <- orig_df %>%
+  dplyr::select(move,price, profit, custcoun) %>%
+  skimr::skim(.) %>%
+  skimr::yank("numeric") %>%
+  dplyr::select(skim_variable, mean, sd, p0, p100) %>%
+  dplyr::mutate_at(vars(mean, sd, p0, p100), ~round(., 3)) %>%
+  kable(format = "latex")
+print(stats)
+```
+
+## Answer to Q2
+```{r echo=TRUE, include=TRUE}
+### Q2 Answer ###
+
+# to factor
+df <- orig_df |>
+  mutate(upc = factor(upc))
+
+# compute market share
+df <- df |>
+  dplyr::group_by(store, week) |>
+  mutate(M_t = sum(custcoun),
+         tot_quant_t = sum(move),
+         s_jt = move / M_t,
+         s_0t = (M_t- tot_quant_t) / M_t,
+         logit_share = log(s_jt/s_0t)) |>
+  ungroup() |>
+  select(-c(M_t, tot_quant_t))
+
+# compute iV
+df <- df |>
+  mutate(whole_p_jt = price * (1 - profit))
+
+# OLS estimation in Berry's logit
+model1_OLS <- feols(logit_share ~  price + i(upc), 
+               df, vcov="hetero"
+)
+
+# IV estimation in Berry's logit
+model1_IV <- feols(logit_share ~  i(upc) | price ~ whole_p_jt, 
+               df, vcov="hetero"
+)
+
+# First stage
+etable(model1_IV, stage = 1, fitstat=~ . + ivfall + ivwaldall.p,
+       signif.code=c("***"=0.01,"**"=0.05,"*"=0.10), 
+       style.tex = style.tex("aer"),  tex = TRUE,
+       digits=3, digits.stats=3)
+
+# Estimation result
+etable(model1_OLS, model1_IV, stage = 2, fitstat=~ . + ivfall + ivwaldall.p,
+       signif.code=c("***"=0.01,"**"=0.05,"*"=0.10), 
+       style.tex = style.tex("aer"),  tex = TRUE,
+       digits=3, digits.stats=3)
+```
