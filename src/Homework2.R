@@ -1,16 +1,3 @@
----
-title: "Appendix: Source code"
-output:
-  pdf_document:
-    latex_engine: pdflatex
-    keep_tex: true
-  html_document:
-    df_print: paged
-date: "2024-05-21"
----
-
-```{r setup, include=TRUE, echo=TRUE}
-knitr::opts_chunk$set(echo = TRUE)
 rm(list = ls())
 gc()
 set.seed(1)
@@ -28,18 +15,11 @@ pacman::p_load(
   ggplot2,
   skimr
 )
-```
 
-### Data
-```{r echo=TRUE, include=TRUE}
 
 orig_df <- read_csv("./input/WSDR.csv")
 head(orig_df, 30)
-```
 
-
-## Answer to Q1
-```{r echo=TRUE, include=TRUE}
 ### Q1 Answer ###
 stats <- orig_df %>%
   dplyr::select(move,price, profit, custcoun) %>%
@@ -49,10 +29,7 @@ stats <- orig_df %>%
   dplyr::mutate_at(vars(mean, sd, p0, p100), ~round(., 3)) %>%
   kable(format = "latex")
 print(stats)
-```
 
-## Answer to Q2
-```{r echo=TRUE, include=TRUE}
 ### Q2 Answer ###
 
 # to factor
@@ -77,12 +54,12 @@ df <- df |>
 
 # OLS estimation in Berry's logit
 model1_OLS <- feols(logit_share ~  price + i(upc), 
-               df, vcov="hetero"
+                    df, vcov="hetero"
 )
 
 # IV estimation in Berry's logit
 model1_IV <- feols(logit_share ~  i(upc) | price ~ whole_p_jt, 
-               df, vcov="hetero"
+                   df, vcov="hetero"
 )
 
 # First stage
@@ -96,10 +73,7 @@ etable(model1_OLS, model1_IV, stage = 2, fitstat=~ . + ivfall + ivwaldall.p,
        signif.code=c("***"=0.01,"**"=0.05,"*"=0.10), 
        style.tex = style.tex("aer"),  tex = TRUE,
        digits=3, digits.stats=3)
-```
 
-## Answer to Q4
-```{r echo=TRUE, include=TRUE}
 ### Q4 Answer ###
 
 # compute own elasticity for each market
@@ -117,7 +91,7 @@ own_elas_df <- own_elas_jt |>
 cross_elas_jt <- df |>
   select(week, store, upc, descrip, price, move, s_jt, Brand) |>
   mutate(cross_elas = (-1) * model1_IV$coefficients["fit_price"] * price * s_jt)
-  
+
 # take median of cross elasticity by upc
 cross_elas_df <- cross_elas_jt |>
   select(upc, descrip, cross_elas) |>
@@ -130,13 +104,11 @@ elas_mat_med <- matrix( rep(cross_elas_df$cross_elas, J), nrow = J, ncol = J)
 diag(elas_mat_med) <- own_elas_df$own_elas
 colnames(elas_mat_med) <- rownames(elas_mat_med) <- as.character(cross_elas_df$descrip)
 elas_mat_med
-```
 
-## Answer to Q5 and Q6
-```{r echo=TRUE, include=TRUE}
 ### Q5 Answer ###
 
-# compute markup and marginal cost
+# create elasticity matrix S(p) for upc and market
+
 compute_markup <- function(own_elas_jt, closs_elas_jt,  owner_mat, is_Multi=FALSE) {
   
   unique_week <- unique(own_elas_jt$week)
@@ -147,7 +119,7 @@ compute_markup <- function(own_elas_jt, closs_elas_jt,  owner_mat, is_Multi=FALS
   # store list of markup and mc
   markup_mc_list <- vector("list", nrow(market_comb))
   
-  # calc markup and mc for each market
+  # calc markup for each market
   for (i in 1:nrow(market_comb)) {
     
     week_i <- market_comb$week[i]
@@ -220,4 +192,3 @@ J <- nrow(cross_elas_df)
 Omega_joint <- matrix(1, nrow = J, ncol = J)
 markup_joint <- compute_markup(own_elas_jt, cross_elas_jt, Omega_joint)
 markup_joint
-```
