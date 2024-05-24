@@ -73,7 +73,7 @@ df <- df |>
 
 # compute iV
 df <- df |>
-  mutate(whole_p_jt = price * (1 - profit))
+  mutate(whole_p_jt = price * (1 - profit*(0.01)))
 
 # OLS estimation in Berry's logit
 model1_OLS <- feols(logit_share ~  price + i(upc), 
@@ -189,6 +189,7 @@ compute_markup <- function(own_elas_jt, closs_elas_jt,  owner_mat, is_Multi=FALS
     
     return_df <- data.frame(week = market_comb$week[i],
                             store = market_comb$store[i],
+                            Brand = sub_cross_elas$Brand, 
                             upc = sub_cross_elas$upc, 
                             descrip = sub_cross_elas$descrip, 
                             price = sub_cross_elas$price, 
@@ -208,16 +209,50 @@ compute_markup <- function(own_elas_jt, closs_elas_jt,  owner_mat, is_Multi=FALS
 J <- nrow(cross_elas_df)
 Omega_sin <- diag(J)
 markup_sin <- compute_markup(own_elas_jt, cross_elas_jt, Omega_sin)
-markup_sin
+markup_sin_med <- markup_sin |>
+  select(Brand, descrip, markup, markup_dev_p, mc) |>
+  group_by(Brand, descrip) |>
+  summarize(markup = median(markup), markup_dev_p = median(markup_dev_p), mc = median(mc))
 
 # compute multi product Nash equilibrium for each market
 Omega_multi <- matrix(0, J, J)
-Omega_multi <- compute_markup(own_elas_jt, cross_elas_jt, Omega_multi, is_Multi=TRUE)
-Omega_multi
+markup_multi <- compute_markup(own_elas_jt, cross_elas_jt, Omega_multi, is_Multi=TRUE)
+markup_multi_med <- markup_multi |>
+  select(Brand, descrip, markup, markup_dev_p, mc) |>
+  group_by(Brand, descrip) |>
+  summarize(markup = median(markup), markup_dev_p = median(markup_dev_p), mc = median(mc))
 
 # joint pricing of all brands
 J <- nrow(cross_elas_df)
 Omega_joint <- matrix(1, nrow = J, ncol = J)
 markup_joint <- compute_markup(own_elas_jt, cross_elas_jt, Omega_joint)
-markup_joint
+markup_joint_med <- markup_joint |>
+  select(Brand, descrip, markup, markup_dev_p, mc) |>
+  group_by(Brand, descrip) |>
+  summarize(markup = median(markup), markup_dev_p = median(markup_dev_p), mc = median(mc))
+
+res_markup <- left_join(markup_sin_med |> select(Brand, descrip, markup, markup_dev_p),
+                        markup_multi_med |> select(Brand, descrip, markup, markup_dev_p),
+                        by = c("Brand", "descrip")) |>
+                left_join(markup_joint_med |> select(Brand, descrip, markup, markup_dev_p),
+                          by = c("Brand", "descrip"), suffix = c(".multi", ".joint"))
+
+res_markup <- res_markup %>%
+  knitr::kable(format = "latex", booktabs = TRUE, caption = "Estimated markup") %>%
+  kableExtra::kable_styling(latex_options = "hold_position")
+cat(res_markup)
+```
+
+## Answer to Q7
+```{r echo=TRUE, include=TRUE}
+res_mc <- left_join(markup_sin_med |> select(Brand, descrip, mc),
+                        markup_multi_med |> select(Brand, descrip, mc),
+                        by = c("Brand", "descrip")) |>
+                left_join(markup_joint_med |> select(Brand, descrip, mc),
+                          by = c("Brand", "descrip"), suffix = c(".multi", ".joint"))
+
+res_mc <- res_mc %>%
+  knitr::kable(format = "latex", booktabs = TRUE, caption = "Estimated markup") %>%
+  kableExtra::kable_styling(latex_options = "hold_position")
+cat(res_mc)
 ```
