@@ -132,7 +132,7 @@ colnames(elas_mat_med) <- rownames(elas_mat_med) <- as.character(cross_elas_df$d
 elas_mat_med
 ```
 
-## Answer to Q5 and Q6
+## Answer to Q5
 ```{r echo=TRUE, include=TRUE}
 ### Q5 Answer ###
 
@@ -162,7 +162,6 @@ compute_markup <- function(own_elas_jt, closs_elas_jt,  owner_mat, is_Multi=FALS
     
     # if multi-product bertrand nash
     if (is_Multi) {
-      owner_mat <- matrix(0, J, J)
       for (j in 1:J) {
         for (k in 1:J) {
           # if j's brand is equal to k's brand, take 1 
@@ -243,7 +242,7 @@ res_markup <- res_markup %>%
 cat(res_markup)
 ```
 
-## Answer to Q7
+## Answer to Q6
 ```{r echo=TRUE, include=TRUE}
 res_mc <- left_join(markup_sin_med |> select(Brand, descrip, mc),
                         markup_multi_med |> select(Brand, descrip, mc),
@@ -256,3 +255,107 @@ res_mc <- res_mc %>%
   kableExtra::kable_styling(latex_options = "hold_position")
 cat(res_mc)
 ```
+
+## Answer to Q7
+```{r echo=TRUE, include=TRUE}
+compute_price_eq = function(df, init_p, owner_mat, alpha_hat, is_Multi =TRUE){
+
+  # iteration stop parameters
+  epsilon <- 1e-6
+  df$price <- init_p
+  error <- 10000
+  
+  while (error > epsilon) {
+    
+    # compute own elasticity for each market
+    own_elas_jt <- df |>
+      select(week, store, upc, descrip, price, move, s_jt, Brand, mc) |>
+      mutate(own_elas = alpha_hat * price * (1 - s_jt)) 
+    
+    # compute cross elasticity for each market
+    cross_elas_jt <- df |>
+      select(week, store, upc, descrip, price, move, s_jt, Brand, mc) |>
+      mutate(cross_elas = (-1) * alpha_hat * price * s_jt)
+  
+    unique_week <- unique(cross_elas_jt$week)
+    unique_store <- unique(cross_elas_jt$store)
+    
+    market_comb <- expand.grid(week = unique_week, store = unique_store)
+    
+    # store list of p
+    p_k_list <- vector("list", nrow(market_comb))
+    
+    # calc eta_(p) for each market
+    for (i in 1:nrow(market_comb)) {
+      
+      week_i <- market_comb$week[i]
+      store_i <- market_comb$store[i]
+      
+      # subset of a particular market
+      sub_own_elas <- own_elas_jt |> filter(week == week_i & store == store_i)
+      sub_cross_elas <- cross_elas_jt |> filter(week == week_i & store == store_i)
+      
+      # number of product
+      J <- nrow(sub_cross_elas)
+      
+      # if multi-product bertrand nash
+      if (is_Multi) {
+        for (j in 1:J) {
+          for (k in 1:J) {
+            # if j's brand is equal to k's brand, take 1 
+            if (sub_cross_elas$Brand[j] == sub_cross_elas$Brand[k]){
+              owner_mat[j,k] = 1
+            }
+          }
+        }
+      }
+      
+      # calculate elasticity matrix
+      elas_mat <- matrix(rep(sub_cross_elas$cross_elas, J), nrow = J, ncol = J)
+      diag(elas_mat) <- sub_own_elas$own_elas
+      
+      # calculate matrix S(p)
+      price_mat <- matrix(rep((1/sub_cross_elas$price), J), nrow = J, ncol = J)
+      share_mat <- t(matrix(rep(sub_cross_elas$s_jt, J), nrow = J, ncol = J))
+      S_p_mat <- (-1) * elas_mat * price_mat * share_mat
+      
+      # calculate p_k for a paticular market
+      D_p_mat <- owner_mat * S_p_mat
+      p_k <- sub_cross_elas$mc + solve(D_p_mat) %*% sub_cross_elas$s_jt
+      
+      # to dataframe 
+      market_df <- data.frame(week = market_comb$week[i],
+                            store = market_comb$store[i],
+                            upc = sub_cross_elas$upc, 
+                            price_post = p_k)
+      # store dataframe
+      p_k_list[[i]] <- market_df
+    }
+      return_df <- do.call(rbind, p_k_list)
+      
+      #update
+      error <- max(abs(return_df$price_post - df$price))
+      df$price <- return_df$price_post
+  }
+  return(return_df)
+}
+
+# compute price equilibrium for counterfactural exercise
+df <- left_join(df, markup_multi |> select(store, week, upc, mc),
+                by = c("store", "week", "upc"))
+init_p <- rep(0.05, nrow(df))
+
+p_eq_ct <- df %>%
+  mutate(mc = mc * 1.1) %>% # 10% increase
+  compute_price_eq(., init_p, Omega_multi, model1_IV$coefficients["fit_price"])
+
+res_p_eq_ct <- left_join(df, p_eq_ct, c("store", "week", "upc")) |>
+  select(Brand, descrip, price, price_post) %>%
+  group_by(Brand, descrip) |>
+  summarize(price = median(price), price_post = median(price_post)) |>
+  knitr::kable(format = "latex", booktabs = TRUE, 
+               caption = "Counterfactural Exercise (MC increases by 10%)") %>%
+  kableExtra::kable_styling(latex_options = "hold_position")
+cat(res_p_eq_ct)
+```
+

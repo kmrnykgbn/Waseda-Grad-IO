@@ -50,7 +50,7 @@ df <- df |>
 
 # compute iV
 df <- df |>
-  mutate(whole_p_jt = price * (1 - profit))
+  mutate(whole_p_jt = price * (1 - profit*(0.01)))
 
 # OLS estimation in Berry's logit
 model1_OLS <- feols(logit_share ~  price + i(upc), 
@@ -107,8 +107,7 @@ elas_mat_med
 
 ### Q5 Answer ###
 
-# create elasticity matrix S(p) for upc and market
-
+# compute markup and marginal cost
 compute_markup <- function(own_elas_jt, closs_elas_jt,  owner_mat, is_Multi=FALSE) {
   
   unique_week <- unique(own_elas_jt$week)
@@ -119,7 +118,7 @@ compute_markup <- function(own_elas_jt, closs_elas_jt,  owner_mat, is_Multi=FALS
   # store list of markup and mc
   markup_mc_list <- vector("list", nrow(market_comb))
   
-  # calc markup for each market
+  # calc markup and mc for each market
   for (i in 1:nrow(market_comb)) {
     
     week_i <- market_comb$week[i]
@@ -134,7 +133,6 @@ compute_markup <- function(own_elas_jt, closs_elas_jt,  owner_mat, is_Multi=FALS
     
     # if multi-product bertrand nash
     if (is_Multi) {
-      owner_mat <- matrix(0, J, J)
       for (j in 1:J) {
         for (k in 1:J) {
           # if j's brand is equal to k's brand, take 1 
@@ -161,6 +159,7 @@ compute_markup <- function(own_elas_jt, closs_elas_jt,  owner_mat, is_Multi=FALS
     
     return_df <- data.frame(week = market_comb$week[i],
                             store = market_comb$store[i],
+                            Brand = sub_cross_elas$Brand, 
                             upc = sub_cross_elas$upc, 
                             descrip = sub_cross_elas$descrip, 
                             price = sub_cross_elas$price, 
@@ -180,15 +179,124 @@ compute_markup <- function(own_elas_jt, closs_elas_jt,  owner_mat, is_Multi=FALS
 J <- nrow(cross_elas_df)
 Omega_sin <- diag(J)
 markup_sin <- compute_markup(own_elas_jt, cross_elas_jt, Omega_sin)
-markup_sin
+markup_sin_med <- markup_sin |>
+  select(Brand, descrip, markup, markup_dev_p, mc) |>
+  group_by(Brand, descrip) |>
+  summarize(markup = median(markup), markup_dev_p = median(markup_dev_p), mc = median(mc))
 
 # compute multi product Nash equilibrium for each market
 Omega_multi <- matrix(0, J, J)
-Omega_multi <- compute_markup(own_elas_jt, cross_elas_jt, Omega_multi, is_Multi=TRUE)
-Omega_multi
+markup_multi <- compute_markup(own_elas_jt, cross_elas_jt, Omega_multi, is_Multi=TRUE)
+markup_multi_med <- markup_multi |>
+  select(Brand, descrip, markup, markup_dev_p, mc) |>
+  group_by(Brand, descrip) |>
+  summarize(markup = median(markup), markup_dev_p = median(markup_dev_p), mc = median(mc))
 
 # joint pricing of all brands
 J <- nrow(cross_elas_df)
 Omega_joint <- matrix(1, nrow = J, ncol = J)
 markup_joint <- compute_markup(own_elas_jt, cross_elas_jt, Omega_joint)
-markup_joint
+markup_joint_med <- markup_joint |>
+  select(Brand, descrip, markup, markup_dev_p, mc) |>
+  group_by(Brand, descrip) |>
+  summarize(markup = median(markup), markup_dev_p = median(markup_dev_p), mc = median(mc))
+
+res_markup <- left_join(markup_sin_med |> select(Brand, descrip, markup, markup_dev_p),
+                        markup_multi_med |> select(Brand, descrip, markup, markup_dev_p),
+                        by = c("Brand", "descrip")) |>
+  left_join(markup_joint_med |> select(Brand, descrip, markup, markup_dev_p),
+            by = c("Brand", "descrip"), suffix = c(".multi", ".joint"))
+
+res_markup <- res_markup %>%
+  knitr::kable(format = "latex", booktabs = TRUE, caption = "Estimated markup") %>%
+  kableExtra::kable_styling(latex_options = "hold_position")
+cat(res_markup)
+
+res_mc <- left_join(markup_sin_med |> select(Brand, descrip, mc),
+                    markup_multi_med |> select(Brand, descrip, mc),
+                    by = c("Brand", "descrip")) |>
+  left_join(markup_joint_med |> select(Brand, descrip, mc),
+            by = c("Brand", "descrip"), suffix = c(".multi", ".joint"))
+
+res_mc <- res_mc %>%
+  knitr::kable(format = "latex", booktabs = TRUE, caption = "Estimated markup") %>%
+  kableExtra::kable_styling(latex_options = "hold_position")
+cat(res_mc)
+
+compute_price_eq = function(df, init_p, owner_mat, alpha_hat, is_Multi =TRUE){
+  
+  # set the threshold
+  lambda <- 1e-6
+  df$price <- init_p
+  distance <- 10000
+  while (distance > lambda) {
+    
+    # compute own elasticity for each market
+    own_elas_jt <- df |>
+      select(week, store, upc, descrip, price, move, s_jt, Brand, mc) |>
+      mutate(own_elas = alpha_hat * price * (1 - s_jt)) 
+    
+    # compute cross elasticity for each market
+    cross_elas_jt <- df |>
+      select(week, store, upc, descrip, price, move, s_jt, Brand, mc) |>
+      mutate(cross_elas = (-1) * alpha_hat * price * s_jt)
+    
+    unique_week <- unique(cross_elas_jt$week)
+    unique_store <- unique(cross_elas_jt$store)
+    
+    market_comb <- expand.grid(week = unique_week, store = unique_store)
+    
+    # store list of p
+    p_k_list <- vector("list", nrow(market_comb))
+    
+    # calc eta_(p) for each market
+    for (i in 1:nrow(market_comb)) {
+      
+      week_i <- market_comb$week[i]
+      store_i <- market_comb$store[i]
+      
+      # subset of a particular market
+      sub_own_elas <- own_elas_jt |> filter(week == week_i & store == store_i)
+      sub_cross_elas <- cross_elas_jt |> filter(week == week_i & store == store_i)
+      
+      # number of product
+      J <- nrow(sub_cross_elas)
+      
+      # if multi-product bertrand nash
+      if (is_Multi) {
+        for (j in 1:J) {
+          for (k in 1:J) {
+            # if j's brand is equal to k's brand, take 1 
+            if (sub_cross_elas$Brand[j] == sub_cross_elas$Brand[k]){
+              owner_mat[j,k] = 1
+            }
+          }
+        }
+      }
+      
+      # calculate elasticity matrix
+      elas_mat <- matrix(rep(sub_cross_elas$cross_elas, J), nrow = J, ncol = J)
+      diag(elas_mat) <- sub_own_elas$own_elas
+      
+      # calculate matrix S(p)
+      price_mat <- matrix(rep((1/sub_cross_elas$price), J), nrow = J, ncol = J)
+      share_mat <- t(matrix(rep(sub_cross_elas$s_jt, J), nrow = J, ncol = J))
+      S_p_mat <- (-1) * elas_mat * price_mat * share_mat
+      
+      # calculate p_k for a paticular market
+      D_p_mat <- owner_mat * S_p_mat
+      kishida <- sub_cross_elas$mc
+      p_k_list[[i]] <- sub_cross_elas$mc + solve(D_p_mat) %*% sub_cross_elas$s_jt
+    }
+    p_k <- do.call(rbind, p_k_list)
+    distance <- max(abs(p_k - df$price))
+    df$price <- p_k
+  }
+  return(p_k)
+}
+
+# compute price equilibrium
+df <- left_join(df, markup_multi |> select(store, week, upc, mc),
+                by = c("store", "week", "upc"))
+init_p <- rep(0.05, nrow(df))
+compute_price_eq(df, init_p, Omega_multi, model1_IV$coefficients["fit_price"])
