@@ -357,7 +357,7 @@ df <- left_join(df, p_eq_ct, c("store", "week", "upc")) |>
   mutate(price_pre = price)
 
 # results to tex
-res_p_eq <- df |>
+res_p_eq_ct <- df |>
   select(Brand, descrip, price_pre, price_post) |>
   group_by(Brand, descrip) |>
   summarize(price_pre = median(price_pre), price_post = median(price_post)) |>
