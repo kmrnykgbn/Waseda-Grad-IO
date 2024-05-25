@@ -343,19 +343,35 @@ compute_price_eq = function(df, init_p, owner_mat, alpha_hat, is_Multi =TRUE){
 # compute price equilibrium for counterfactural exercise
 df <- left_join(df, markup_multi |> select(store, week, upc, mc),
                 by = c("store", "week", "upc"))
+
+# initial price
 init_p <- rep(0.05, nrow(df))
 
+# computation result
 p_eq_ct <- df %>%
   mutate(mc = mc * 1.1) %>% # 10% increase
   compute_price_eq(., init_p, Omega_multi, model1_IV$coefficients["fit_price"])
 
-res_p_eq_ct <- left_join(df, p_eq_ct, c("store", "week", "upc")) |>
-  select(Brand, descrip, price, price_post) %>%
+# results to tex
+df <- left_join(df, p_eq_ct, c("store", "week", "upc")) |>
+  mutate(price_pre = price)
+
+# results to tex
+res_p_eq <- df |>
+  select(Brand, descrip, price_pre, price_post) |>
   group_by(Brand, descrip) |>
-  summarize(price = median(price), price_post = median(price_post)) |>
+  summarize(price_pre = median(price_pre), price_post = median(price_post)) |>
   knitr::kable(format = "latex", booktabs = TRUE, 
-               caption = "Counterfactural Exercise (MC increases by 10%)") %>%
+               caption = "Counterfactural Exercise (MC increases by 10%)") |>
   kableExtra::kable_styling(latex_options = "hold_position")
 cat(res_p_eq_ct)
 ```
 
+## Answer to Q8
+```{r echo=TRUE, include=TRUE}
+compute_CS_diff= function(df, alpha_hat, beta_hat){
+  df <- df |>
+    mutate(log_sum_post = alpha_hat*price_post + beta,
+           log_sum_pre = alpha_hat*price_pre + beta,)
+}
+```
