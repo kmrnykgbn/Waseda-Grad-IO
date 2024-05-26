@@ -339,7 +339,7 @@ df <- left_join(df, markup_multi |> select(store, week, upc, mc),
                 by = c("store", "week", "upc"))
 
 # initial price
-init_p <- rep(0.025, nrow(df))
+init_p <- rep(0.020, nrow(df))
 
 # computation result
 alpha_hat <- model1_IV$coefficients["fit_price"]
