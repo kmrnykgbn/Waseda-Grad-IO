@@ -1,3 +1,4 @@
+knitr::opts_chunk$set(echo = TRUE)
 rm(list = ls())
 gc()
 set.seed(1)
@@ -36,6 +37,13 @@ print(stats)
 df <- orig_df |>
   mutate(upc = factor(upc)) |>
   arrange(week, store, upc)
+
+# create product dummy cols
+dummy_vars <- model.matrix(~ upc - 1, data = df)
+colnames(dummy_vars) <- gsub("upc", "dummy_", colnames(dummy_vars))
+df <- cbind(df, dummy_vars)
+# delete reference of dummy col
+df <- df |>  select(-c(dummy_1200000230)) 
 
 # compute market share
 df <- df |>
@@ -85,7 +93,7 @@ own_elas_jt <- df |>
 own_elas_df <- own_elas_jt |>
   select(upc, descrip, own_elas) |>
   group_by(upc, descrip) |>
-  summarize(own_elas = median(own_elas))
+  summarize(own_elas = median(own_elas), .groups = 'drop')
 
 # compute cross elasticity for each market
 cross_elas_jt <- df |>
@@ -96,7 +104,7 @@ cross_elas_jt <- df |>
 cross_elas_df <- cross_elas_jt |>
   select(upc, descrip, cross_elas) |>
   group_by(upc, descrip) |>
-  summarize(cross_elas = median(cross_elas))
+  summarize(cross_elas = median(cross_elas), .groups = 'drop')
 
 # create elasticity matrix
 J <- nrow(cross_elas_df)
@@ -155,6 +163,8 @@ compute_markup <- function(own_elas_jt, closs_elas_jt,  owner_mat, is_Multi=FALS
     # calculate markup for a paticular market
     D_p_mat <- owner_mat * S_p_mat
     markup <- solve(D_p_mat) %*% sub_cross_elas$s_jt
+    
+    # calculate marginal cost
     mc <- sub_cross_elas$price - markup
     
     return_df <- data.frame(week = market_comb$week[i],
@@ -182,7 +192,8 @@ markup_sin <- compute_markup(own_elas_jt, cross_elas_jt, Omega_sin)
 markup_sin_med <- markup_sin |>
   select(Brand, descrip, markup, markup_dev_p, mc) |>
   group_by(Brand, descrip) |>
-  summarize(markup = median(markup), markup_dev_p = median(markup_dev_p), mc = median(mc))
+  summarize(markup = median(markup), markup_dev_p = median(markup_dev_p), 
+            mc = median(mc), .groups = 'drop')
 
 # compute multi product Nash equilibrium for each market
 Omega_multi <- matrix(0, J, J)
@@ -190,7 +201,8 @@ markup_multi <- compute_markup(own_elas_jt, cross_elas_jt, Omega_multi, is_Multi
 markup_multi_med <- markup_multi |>
   select(Brand, descrip, markup, markup_dev_p, mc) |>
   group_by(Brand, descrip) |>
-  summarize(markup = median(markup), markup_dev_p = median(markup_dev_p), mc = median(mc))
+  summarize(markup = median(markup), markup_dev_p = median(markup_dev_p), 
+            mc = median(mc), .groups = 'drop')
 
 # joint pricing of all brands
 J <- nrow(cross_elas_df)
@@ -199,7 +211,8 @@ markup_joint <- compute_markup(own_elas_jt, cross_elas_jt, Omega_joint)
 markup_joint_med <- markup_joint |>
   select(Brand, descrip, markup, markup_dev_p, mc) |>
   group_by(Brand, descrip) |>
-  summarize(markup = median(markup), markup_dev_p = median(markup_dev_p), mc = median(mc))
+  summarize(markup = median(markup), markup_dev_p = median(markup_dev_p), 
+            mc = median(mc), .groups = 'drop')
 
 res_markup <- left_join(markup_sin_med |> select(Brand, descrip, markup, markup_dev_p),
                         markup_multi_med |> select(Brand, descrip, markup, markup_dev_p),
@@ -223,23 +236,20 @@ res_mc <- res_mc %>%
   kableExtra::kable_styling(latex_options = "hold_position")
 cat(res_mc)
 
-compute_price_eq = function(df, init_p, owner_mat, alpha_hat, is_Multi =TRUE){
+compute_price_eq = function(df, init_p, owner_mat, alpha_hat, beta_hat, is_Multi =TRUE){
   
-  # set the threshold
-  lambda <- 1e-6
+  # iteration stop parameters
+  epsilon <- 1e-5
   df$price <- init_p
-  distance <- 10000
-  while (distance > lambda) {
-    
-    # compute own elasticity for each market
-    own_elas_jt <- df |>
-      select(week, store, upc, descrip, price, move, s_jt, Brand, mc) |>
-      mutate(own_elas = alpha_hat * price * (1 - s_jt)) 
-    
-    # compute cross elasticity for each market
-    cross_elas_jt <- df |>
-      select(week, store, upc, descrip, price, move, s_jt, Brand, mc) |>
-      mutate(cross_elas = (-1) * alpha_hat * price * s_jt)
+  error <- 10000
+  count_max <- 20
+  counter <- 0
+  
+  while (error > epsilon & counter < count_max) {
+    # check counter
+    counter = counter + 1
+    print(counter)
+    print(error)
     
     unique_week <- unique(cross_elas_jt$week)
     unique_store <- unique(cross_elas_jt$store)
@@ -256,8 +266,17 @@ compute_price_eq = function(df, init_p, owner_mat, alpha_hat, is_Multi =TRUE){
       store_i <- market_comb$store[i]
       
       # subset of a particular market
-      sub_own_elas <- own_elas_jt |> filter(week == week_i & store == store_i)
-      sub_cross_elas <- cross_elas_jt |> filter(week == week_i & store == store_i)
+      df_t <- df |> filter(week == week_i & store == store_i)
+      
+      # compute own elasticity for each market
+      sub_own_elas <- df_t |>
+        select(week, store, upc, descrip, price, move, s_jt, Brand, mc) |>
+        mutate(own_elas = alpha_hat * price * (1 - s_jt)) 
+      
+      # compute cross elasticity for each market
+      sub_cross_elas <- df_t |>
+        select(week, store, upc, descrip, price, move, s_jt, Brand, mc) |>
+        mutate(cross_elas = (-1) * alpha_hat * price * s_jt)
       
       # number of product
       J <- nrow(sub_cross_elas)
@@ -285,18 +304,139 @@ compute_price_eq = function(df, init_p, owner_mat, alpha_hat, is_Multi =TRUE){
       
       # calculate p_k for a paticular market
       D_p_mat <- owner_mat * S_p_mat
-      kishida <- sub_cross_elas$mc
-      p_k_list[[i]] <- sub_cross_elas$mc + solve(D_p_mat) %*% sub_cross_elas$s_jt
+      p_k <- sub_cross_elas$mc + solve(D_p_mat) %*% sub_cross_elas$s_jt
+      
+      # calculate new share
+      X_j <- as.matrix(df_t[, grepl("dummy_", colnames(df_t))])
+      xi_hat <- log(df_t$s_jt/df_t$s_0t) - (alpha_hat * df_t$price + X_j %*% beta_hat)
+      numerator <- exp(alpha_hat * p_k + X_j %*% beta_hat + xi_hat)
+      s_jt_old <- df$s_jt
+      s_jt <- numerator / (1 + sum(numerator))
+      
+      # to dataframe 
+      market_df <- data.frame(week = market_comb$week[i],
+                              store = market_comb$store[i],
+                              upc = sub_cross_elas$upc,
+                              s_jt_post = s_jt,
+                              price_post = p_k)
+      # store dataframe
+      p_k_list[[i]] <- market_df
     }
-    p_k <- do.call(rbind, p_k_list)
-    distance <- max(abs(p_k - df$price))
-    df$price <- p_k
+    return_df <- do.call(rbind, p_k_list)
+    
+    #update
+    error <- max(abs(return_df$price_post - df$price))
+    df$price <- return_df$price_post
+    df$s_jt <- return_df$s_jt_post
   }
-  return(p_k)
+  return(return_df)
 }
 
-# compute price equilibrium
+# compute price equilibrium for counterfactural exercise
 df <- left_join(df, markup_multi |> select(store, week, upc, mc),
                 by = c("store", "week", "upc"))
-init_p <- rep(0.05, nrow(df))
-compute_price_eq(df, init_p, Omega_multi, model1_IV$coefficients["fit_price"])
+
+# initial price
+init_p <- rep(0.024, nrow(df))
+
+# computation result
+alpha_hat <- model1_IV$coefficients["fit_price"]
+beta_hat <- as.vector(model1_IV$coefficients)[3:11]
+df <- df |> mutate(mc_post = mc * 1.1)# add 10% increase
+p_eq_ct <- df %>%
+  mutate(mc = mc_post) %>% # set marginal cost 10% increase
+  compute_price_eq(., init_p, Omega_multi, alpha_hat, beta_hat)
+
+# results to tex
+df <- left_join(df, p_eq_ct, c("store", "week", "upc")) |>
+  mutate(price_pre = price)
+
+# results to tex
+res_p_eq_ct <- df |>
+  select(Brand, descrip, price_pre, price_post) |>
+  group_by(Brand, descrip) |>
+  summarize(price_pre = median(price_pre), price_post = median(price_post), .groups = 'drop') |>
+  knitr::kable(format = "latex", booktabs = TRUE, 
+               caption = "Counterfactural Exercise (MC increases by 10%)") |>
+  kableExtra::kable_styling(latex_options = "hold_position")
+cat(res_p_eq_ct)
+
+compute_walfare = function(df, alpha_hat, beta_hat){
+  
+  unique_week <- unique(df$week)
+  unique_store <- unique(df$store)
+  
+  # market list
+  market_comb <- expand.grid(week = unique_week, store = unique_store)
+  
+  # store list of p
+  walfare_list <- vector("list", nrow(market_comb))
+  
+  # calculating walfare for each market
+  for (i in 1:nrow(market_comb)) {
+    week_i <- market_comb$week[i]
+    store_i <- market_comb$store[i]
+    
+    # subset of a particular market
+    df_t <- df |> filter(week == week_i & store == store_i)
+    
+    # matrix X_j
+    X_j <- as.matrix(df_t[, grepl("dummy_", colnames(df_t))])
+    
+    # calculate pre delta_jt
+    xi_hat <- log(df_t$s_jt_old/df_t$s_0t) - (alpha_hat * df_t$price_old + X_j %*% beta_hat)
+    delta<- alpha_hat * df_t$price + X_j %*% beta_hat + xi_hat
+    
+    # caliculate CV based on Small and Rosen (1981)
+    #CV <- (1 / (-1) * alpha_hat) * (1+log(sum(exp(delta_post))) - (1+ log(sum(exp(delta_pre)))))
+    CS <- 1+log(sum(exp(delta)))
+    
+    # calculate producer surplus for each brand in a paticular market
+    M_t <- mean(df_t$custcoun)
+    PS_f_t <- df_t |>
+      mutate(calc_profit = (price - mc) * s_jt * M_t) |>
+      group_by(Brand, week, store) |>
+      summarize(calc_profit = sum(calc_profit), .groups = 'drop')
+    
+    # summation accross firm in the market
+    PS  <-  PS_f_t |>
+      summarize(calc_profit = sum(calc_profit), .groups = 'drop')
+    
+    # to dataframe 
+    walfare_df <- data.frame(week = week_i,
+                             store = store_i,
+                             CS = CS,
+                             profit = PS$calc_profit,
+                             TS = CS + PS$calc_profit)
+    
+    # store dataframe
+    walfare_list[[i]] <- walfare_df
+  }
+  return_df <- do.call(rbind, walfare_list)
+  return(return_df)
+}
+
+walfare_pre <- df |>
+  mutate(price_old = price, s_jt_old = s_jt) |> # set variables for xi
+  compute_walfare(alpha_hat, beta_hat)
+
+walfare_post <- df |>
+  mutate(price_old = price, s_jt_old = s_jt,
+         price = price_post, mc = mc_post, s_jt = s_jt_post) |> # use updated variables
+  compute_walfare(alpha_hat, beta_hat)
+
+Diff_CS <- walfare_post$CS - walfare_pre$CS
+Diff_PS <- walfare_post$calc_profit - walfare_pre$calc_profit
+Diff_TS <- walfare_post$TS - walfare_pre$TS
+
+# results to tex
+res_walfare <- walfare_post |>
+  mutate(Diff_CS = Diff_CS, Diff_PS = Diff_PS, Diff_TS = Diff_TS) |>
+  select(week, store, Diff_CS, Diff_PS, Diff_TS) |>
+  summarize(sum_Diff_CS = sum(Diff_CS), sum_Diff_PS = sum(Diff_PS), sum_Diff_TS = sum(Diff_TS), 
+            med_Diff_CS = median(Diff_CS), med_Diff_PS = median(Diff_PS), med_Diff_TS = median(Diff_TS), 
+            .groups = 'drop') |>
+  knitr::kable(format = "latex", booktabs = TRUE, 
+               caption = "Summary of each surplus difference") |>
+  kableExtra::kable_styling(latex_options = "hold_position")
+cat(res_walfare)
