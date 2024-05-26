@@ -136,7 +136,10 @@ J <- nrow(cross_elas_df)
 elas_mat_med <- matrix( rep(cross_elas_df$cross_elas, J), nrow = J, ncol = J)
 diag(elas_mat_med) <- own_elas_df$own_elas
 colnames(elas_mat_med) <- rownames(elas_mat_med) <- as.character(cross_elas_df$descrip)
-elas_mat_med
+res_elas_mat <- elas_mat_med |>
+  knitr::kable(format = "latex", booktabs = TRUE, caption = "Median Elasticity matrix") |>
+  kableExtra::kable_styling(latex_options = "hold_position")
+print(res_elas_mat)
 ```
 
 ## Setup function for Q5 & Q6
@@ -390,9 +393,12 @@ df <- left_join(df, p_eq_ct, c("store", "week", "upc")) |>
 
 # results to tex
 res_p_eq_ct <- df |>
-  select(Brand, descrip, price_pre, price_post) |>
+  select(Brand, descrip, price_pre, price_post, mc, mc_post) |>
   group_by(Brand, descrip) |>
-  summarize(price_pre = median(price_pre), price_post = median(price_post), .groups = 'drop') |>
+  summarize(price_pre = median(price_pre),
+            price_post = median(price_post), 
+            mc_price_share_diff = median((mc_post - mc)/price_post),
+            .groups = 'drop') |>
   knitr::kable(format = "latex", booktabs = TRUE, 
                caption = "Counterfactural Exercise (MC increases by 10%)") |>
   kableExtra::kable_styling(latex_options = "hold_position")
@@ -476,7 +482,7 @@ res_walfare <- walfare_post |>
   mutate(Diff_CS = Diff_CS, Diff_PS = Diff_PS, Diff_TS = Diff_TS) |>
   select(week, store, Diff_CS, Diff_PS, Diff_TS) |>
   summarize(sum_Diff_CS = sum(Diff_CS), sum_Diff_PS = sum(Diff_PS), sum_Diff_TS = sum(Diff_TS), 
-            med_Diff_CS = median(Diff_CS), med_Diff_PS = median(Diff_PS), med_Diff_TS = median(Diff_TS), 
+            mean_Diff_CS = mean(Diff_CS), mean_Diff_PS = mean(Diff_PS), mean_Diff_TS = mean(Diff_TS), 
             .groups = 'drop') |>
   knitr::kable(format = "latex", booktabs = TRUE, 
                caption = "Summary of each surplus difference") |>
@@ -484,7 +490,13 @@ res_walfare <- walfare_post |>
 cat(res_walfare)
 ```
 
+## Answer to Q9
 ```{r echo=TRUE, include=TRUE}
-as.vector(model1_IV$coefficients)[3:11]
-model1_IV$coefficients
+### Q9 Answer ###
+
+
+p_eq_ct <- df %>%
+  mutate(mc = mc_post) %>% # set marginal cost 10% increase
+  compute_price_eq(., init_p, Omega_multi, alpha_hat, beta_hat)
+```
 ```
