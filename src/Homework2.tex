@@ -5,16 +5,19 @@
 \documentclass[
 ]{article}
 \usepackage{amsmath,amssymb}
-\usepackage{lmodern}
 \usepackage{iftex}
 \ifPDFTeX
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
   \usepackage{textcomp} % provide euro and other symbols
 \else % if luatex or xetex
-  \usepackage{unicode-math}
+  \usepackage{unicode-math} % this also loads fontspec
   \defaultfontfeatures{Scale=MatchLowercase}
   \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
 \fi
 % Use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -45,13 +48,13 @@
 \newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
 \newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
 \newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
-\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
 \newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
 \newcommand{\BuiltInTok}[1]{#1}
 \newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
 \newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
 \newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
-\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
 \newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
 \newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
 \newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
@@ -59,7 +62,7 @@
 \newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
 \newcommand{\ExtensionTok}[1]{#1}
 \newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
-\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
 \newcommand{\ImportTok}[1]{#1}
 \newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
 \newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
@@ -68,7 +71,7 @@
 \newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
 \newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
 \newcommand{\RegionMarkerTok}[1]{#1}
-\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
 \newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
 \newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
 \newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
@@ -110,7 +113,7 @@
 \fi
 \IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
-\urlstyle{same} % disable monospaced font for URLs
+\urlstyle{same}
 \hypersetup{
   pdftitle={Appendix: Source code},
   hidelinks,
@@ -132,15 +135,15 @@
 \end{Shaded}
 
 \begin{verbatim}
-##          used (Mb) gc trigger (Mb) max used (Mb)
-## Ncells 475832 25.5    1027322 54.9   664394 35.5
-## Vcells 891121  6.8    8388608 64.0  1814579 13.9
+##          used (Mb) gc trigger (Mb) limit (Mb) max used (Mb)
+## Ncells 478481 25.6    1032377 55.2         NA   669422 35.8
+## Vcells 899902  6.9    8388608 64.0      36864  1851803 14.2
 \end{verbatim}
 
 \begin{Shaded}
 \begin{Highlighting}[]
 \FunctionTok{set.seed}\NormalTok{(}\DecValTok{1}\NormalTok{)}
-\FunctionTok{options}\NormalTok{(}\AttributeTok{digits=}\DecValTok{6}\NormalTok{) }
+\FunctionTok{options}\NormalTok{(}\AttributeTok{digits=}\DecValTok{5}\NormalTok{) }
 \ControlFlowTok{if}\NormalTok{ (}\SpecialCharTok{!}\FunctionTok{require}\NormalTok{(}\StringTok{"pacman"}\NormalTok{)) }\FunctionTok{install.packages}\NormalTok{(}\StringTok{"pacman"}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
@@ -252,12 +255,20 @@
 
 \CommentTok{\# to factor}
 \NormalTok{df }\OtherTok{\textless{}{-}}\NormalTok{ orig\_df }\SpecialCharTok{|\textgreater{}}
-  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{upc =} \FunctionTok{factor}\NormalTok{(upc))}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{upc =} \FunctionTok{factor}\NormalTok{(upc)) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{arrange}\NormalTok{(week, store, upc)}
+
+\CommentTok{\# create product dummy cols}
+\NormalTok{dummy\_vars }\OtherTok{\textless{}{-}} \FunctionTok{model.matrix}\NormalTok{(}\SpecialCharTok{\textasciitilde{}}\NormalTok{ upc }\SpecialCharTok{{-}} \DecValTok{1}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df)}
+\FunctionTok{colnames}\NormalTok{(dummy\_vars) }\OtherTok{\textless{}{-}} \FunctionTok{gsub}\NormalTok{(}\StringTok{"upc"}\NormalTok{, }\StringTok{"dummy\_"}\NormalTok{, }\FunctionTok{colnames}\NormalTok{(dummy\_vars))}
+\NormalTok{df }\OtherTok{\textless{}{-}} \FunctionTok{cbind}\NormalTok{(df, dummy\_vars)}
+\CommentTok{\# delete reference of dummy col}
+\NormalTok{df }\OtherTok{\textless{}{-}}\NormalTok{ df }\SpecialCharTok{|\textgreater{}}  \FunctionTok{select}\NormalTok{(}\SpecialCharTok{{-}}\FunctionTok{c}\NormalTok{(dummy\_1200000230)) }
 
 \CommentTok{\# compute market share}
 \NormalTok{df }\OtherTok{\textless{}{-}}\NormalTok{ df }\SpecialCharTok{|\textgreater{}}
 \NormalTok{  dplyr}\SpecialCharTok{::}\FunctionTok{group\_by}\NormalTok{(store, week) }\SpecialCharTok{|\textgreater{}}
-  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{M\_t =} \FunctionTok{sum}\NormalTok{(custcoun),}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{M\_t =} \FunctionTok{mean}\NormalTok{(custcoun),}
          \AttributeTok{tot\_quant\_t =} \FunctionTok{sum}\NormalTok{(move),}
          \AttributeTok{s\_jt =}\NormalTok{ move }\SpecialCharTok{/}\NormalTok{ M\_t,}
          \AttributeTok{s\_0t =}\NormalTok{ (M\_t}\SpecialCharTok{{-}}\NormalTok{ tot\_quant\_t) }\SpecialCharTok{/}\NormalTok{ M\_t,}
@@ -267,7 +278,7 @@
 
 \CommentTok{\# compute iV}
 \NormalTok{df }\OtherTok{\textless{}{-}}\NormalTok{ df }\SpecialCharTok{|\textgreater{}}
-  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{whole\_p\_jt =}\NormalTok{ price }\SpecialCharTok{*}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ profit))}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{whole\_p\_jt =}\NormalTok{ price }\SpecialCharTok{*}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ profit}\SpecialCharTok{*}\NormalTok{(}\FloatTok{0.01}\NormalTok{)))}
 
 \CommentTok{\# OLS estimation in Berry\textquotesingle{}s logit}
 \NormalTok{model1\_OLS }\OtherTok{\textless{}{-}} \FunctionTok{feols}\NormalTok{(logit\_share }\SpecialCharTok{\textasciitilde{}}\NormalTok{  price }\SpecialCharTok{+} \FunctionTok{i}\NormalTok{(upc), }
@@ -295,34 +306,34 @@
 ##                            & price\\  
 ##                            & (1)\\  
 ##    \midrule 
-##    Constant                & 0.019$^{***}$\\   
-##                            & (0.0001)\\   
-##    whole\_p\_jt            & -0.006$^{***}$\\   
-##                            & (0.0002)\\   
-##    upc $=$ 1200000394      & 0.003$^{***}$\\   
-##                            & (0.0001)\\   
-##    upc $=$ 1200000396      & 0.003$^{***}$\\   
-##                            & (0.0001)\\   
-##    upc $=$ 1200000492      & 0.0003$^{**}$\\   
-##                            & (0.0001)\\   
-##    upc $=$ 1200000496      & 0.0003$^{**}$\\   
-##                            & (0.0001)\\   
-##    upc $=$ 3828100261      & -0.004$^{***}$\\   
-##                            & (0.0001)\\   
-##    upc $=$ 4900000634      & 0.012$^{***}$\\   
-##                            & (0.0002)\\   
-##    upc $=$ 4900000639      & $3.88\times 10^{-5}$\\    
-##                            & (0.0001)\\   
-##    upc $=$ 4900000658      & 0.012$^{***}$\\   
-##                            & (0.0002)\\   
-##    upc $=$ 5490000060      & $-1.58\times 10^{-5}$\\    
-##                            & (0.0001)\\   
+##    Constant                & 0.005$^{***}$\\   
+##                            & ($8.18\times 10^{-5}$)\\    
+##    whole\_p\_jt            & 0.879$^{***}$\\   
+##                            & (0.004)\\   
+##    upc $=$ 1200000394      & 0.001$^{***}$\\   
+##                            & ($7.49\times 10^{-5}$)\\    
+##    upc $=$ 1200000396      & 0.001$^{***}$\\   
+##                            & ($7.49\times 10^{-5}$)\\    
+##    upc $=$ 1200000492      & 0.0006$^{***}$\\   
+##                            & ($7.55\times 10^{-5}$)\\    
+##    upc $=$ 1200000496      & 0.0006$^{***}$\\   
+##                            & ($7.55\times 10^{-5}$)\\    
+##    upc $=$ 3828100261      & 0.002$^{***}$\\   
+##                            & ($8.77\times 10^{-5}$)\\    
+##    upc $=$ 4900000634      & 0.006$^{***}$\\   
+##                            & ($9.25\times 10^{-5}$)\\    
+##    upc $=$ 4900000639      & $-6.34\times 10^{-5}$\\    
+##                            & ($7.58\times 10^{-5}$)\\    
+##    upc $=$ 4900000658      & 0.006$^{***}$\\   
+##                            & ($9.25\times 10^{-5}$)\\    
+##    upc $=$ 5490000060      & 0.0006$^{***}$\\   
+##                            & ($8.38\times 10^{-5}$)\\    
 ##     \\
 ##    Observations            & 15,600\\  
-##    R$^2$                   & 0.656\\  
-##    Adjusted R$^2$          & 0.656\\  
-##    F-test (IV only)        & 1,525.2\\  
-##    Wald (IV only), p-value & $2.37\times 10^{-174}$\\   
+##    R$^2$                   & 0.899\\  
+##    Adjusted R$^2$          & 0.898\\  
+##    F-test (IV only)        & 42,461.2\\  
+##    Wald (IV only), p-value & $NaN\times 10^{-Inf}$\\   
 ##    \bottomrule
 ## \end{tabular}
 ## \par\endgroup
@@ -346,37 +357,724 @@
 ##     & \multicolumn{2}{c}{logit\_share}\\
 ##                            & (1)            & (2)\\  
 ##    \midrule 
-##    Constant                & -3.54$^{***}$  & -5.37$^{***}$\\   
-##                            & (0.033)        & (0.118)\\   
-##    price                   & -156.0$^{***}$ & -68.6$^{***}$\\   
-##                            & (1.34)         & (5.75)\\   
-##    upc $=$ 1200000394      & -1.56$^{***}$  & -1.84$^{***}$\\   
-##                            & (0.022)        & (0.035)\\   
-##    upc $=$ 1200000396      & -1.93$^{***}$  & -2.22$^{***}$\\   
-##                            & (0.022)        & (0.035)\\   
-##    upc $=$ 1200000492      & -1.23$^{***}$  & -1.28$^{***}$\\   
-##                            & (0.022)        & (0.028)\\   
-##    upc $=$ 1200000496      & -1.20$^{***}$  & -1.26$^{***}$\\   
-##                            & (0.021)        & (0.027)\\   
-##    upc $=$ 3828100261      & -1.01$^{***}$  & -0.771$^{***}$\\   
-##                            & (0.025)        & (0.030)\\   
-##    upc $=$ 4900000634      & 0.783$^{***}$  & -0.476$^{***}$\\   
-##                            & (0.032)        & (0.091)\\   
+##    Constant                & -1.09$^{***}$  & -0.715$^{***}$\\   
+##                            & (0.035)        & (0.039)\\   
+##    price                   & -159.7$^{***}$ & -177.8$^{***}$\\   
+##                            & (1.40)         & (1.63)\\   
+##    upc $=$ 1200000394      & -1.55$^{***}$  & -1.49$^{***}$\\   
+##                            & (0.023)        & (0.023)\\   
+##    upc $=$ 1200000396      & -1.92$^{***}$  & -1.86$^{***}$\\   
+##                            & (0.023)        & (0.022)\\   
+##    upc $=$ 1200000492      & -1.23$^{***}$  & -1.22$^{***}$\\   
+##                            & (0.023)        & (0.022)\\   
+##    upc $=$ 1200000496      & -1.20$^{***}$  & -1.19$^{***}$\\   
+##                            & (0.022)        & (0.021)\\   
+##    upc $=$ 3828100261      & -1.02$^{***}$  & -1.07$^{***}$\\   
+##                            & (0.025)        & (0.025)\\   
+##    upc $=$ 4900000634      & 0.837$^{***}$  & 1.10$^{***}$\\   
+##                            & (0.033)        & (0.034)\\   
 ##    upc $=$ 4900000639      & -0.300$^{***}$ & -0.300$^{***}$\\   
-##                            & (0.020)        & (0.026)\\   
-##    upc $=$ 4900000658      & 0.575$^{***}$  & -0.684$^{***}$\\   
-##                            & (0.033)        & (0.091)\\   
-##    upc $=$ 5490000060      & -2.09$^{***}$  & -2.12$^{***}$\\   
-##                            & (0.021)        & (0.027)\\   
+##                            & (0.021)        & (0.021)\\   
+##    upc $=$ 4900000658      & 0.629$^{***}$  & 0.889$^{***}$\\   
+##                            & (0.034)        & (0.035)\\   
+##    upc $=$ 5490000060      & -2.09$^{***}$  & -2.08$^{***}$\\   
+##                            & (0.022)        & (0.021)\\   
 ##     \\
 ##    Observations            & 15,600         & 15,600\\  
-##    R$^2$                   & 0.679          & 0.584\\  
-##    Adjusted R$^2$          & 0.679          & 0.583\\  
-##    F-test (IV only)        &                & 131.8\\  
-##    Wald (IV only), p-value &                & $1.27\times 10^{-32}$\\   
+##    R$^2$                   & 0.673          & 0.669\\  
+##    Adjusted R$^2$          & 0.673          & 0.669\\  
+##    F-test (IV only)        &                & 12,273.7\\  
+##    Wald (IV only), p-value &                & $NaN\times 10^{-Inf}$\\   
 ##    \bottomrule
 ## \end{tabular}
 ## \par\endgroup
 \end{verbatim}
+
+\hypertarget{answer-to-q4}{%
+\subsection{Answer to Q4}\label{answer-to-q4}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\#\# Q4 Answer }\AlertTok{\#\#\#}
+
+\CommentTok{\# compute own elasticity for each market}
+\NormalTok{own\_elas\_jt }\OtherTok{\textless{}{-}}\NormalTok{ df }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{select}\NormalTok{(week, store, upc, descrip, price, move, s\_jt, Brand) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{own\_elas =}\NormalTok{ model1\_IV}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"fit\_price"}\NormalTok{] }\SpecialCharTok{*}\NormalTok{ price }\SpecialCharTok{*}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ s\_jt)) }
+
+\CommentTok{\# take median of own elasticity by upc}
+\NormalTok{own\_elas\_df }\OtherTok{\textless{}{-}}\NormalTok{ own\_elas\_jt }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{select}\NormalTok{(upc, descrip, own\_elas) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{group\_by}\NormalTok{(upc, descrip) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{summarize}\NormalTok{(}\AttributeTok{own\_elas =} \FunctionTok{median}\NormalTok{(own\_elas), }\AttributeTok{.groups =} \StringTok{\textquotesingle{}drop\textquotesingle{}}\NormalTok{)}
+
+\CommentTok{\# compute cross elasticity for each market}
+\NormalTok{cross\_elas\_jt }\OtherTok{\textless{}{-}}\NormalTok{ df }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{select}\NormalTok{(week, store, upc, descrip, price, move, s\_jt, Brand) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{cross\_elas =}\NormalTok{ (}\SpecialCharTok{{-}}\DecValTok{1}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ model1\_IV}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"fit\_price"}\NormalTok{] }\SpecialCharTok{*}\NormalTok{ price }\SpecialCharTok{*}\NormalTok{ s\_jt)}
+  
+\CommentTok{\# take median of cross elasticity by upc}
+\NormalTok{cross\_elas\_df }\OtherTok{\textless{}{-}}\NormalTok{ cross\_elas\_jt }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{select}\NormalTok{(upc, descrip, cross\_elas) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{group\_by}\NormalTok{(upc, descrip) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{summarize}\NormalTok{(}\AttributeTok{cross\_elas =} \FunctionTok{median}\NormalTok{(cross\_elas), }\AttributeTok{.groups =} \StringTok{\textquotesingle{}drop\textquotesingle{}}\NormalTok{)}
+
+\CommentTok{\# create elasticity matrix}
+\NormalTok{J }\OtherTok{\textless{}{-}} \FunctionTok{nrow}\NormalTok{(cross\_elas\_df)}
+\NormalTok{elas\_mat\_med }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{( }\FunctionTok{rep}\NormalTok{(cross\_elas\_df}\SpecialCharTok{$}\NormalTok{cross\_elas, J), }\AttributeTok{nrow =}\NormalTok{ J, }\AttributeTok{ncol =}\NormalTok{ J)}
+\FunctionTok{diag}\NormalTok{(elas\_mat\_med) }\OtherTok{\textless{}{-}}\NormalTok{ own\_elas\_df}\SpecialCharTok{$}\NormalTok{own\_elas}
+\FunctionTok{colnames}\NormalTok{(elas\_mat\_med) }\OtherTok{\textless{}{-}} \FunctionTok{rownames}\NormalTok{(elas\_mat\_med) }\OtherTok{\textless{}{-}} \FunctionTok{as.character}\NormalTok{(cross\_elas\_df}\SpecialCharTok{$}\NormalTok{descrip)}
+\NormalTok{res\_elas\_mat }\OtherTok{\textless{}{-}}\NormalTok{ elas\_mat\_med }\SpecialCharTok{|\textgreater{}}
+\NormalTok{  knitr}\SpecialCharTok{::}\FunctionTok{kable}\NormalTok{(}\AttributeTok{format =} \StringTok{"latex"}\NormalTok{, }\AttributeTok{booktabs =} \ConstantTok{TRUE}\NormalTok{, }\AttributeTok{caption =} \StringTok{"Median Elasticity matrix"}\NormalTok{) }\SpecialCharTok{|\textgreater{}}
+\NormalTok{  kableExtra}\SpecialCharTok{::}\FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{latex\_options =} \StringTok{"hold\_position"}\NormalTok{)}
+\FunctionTok{print}\NormalTok{(res\_elas\_mat)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## \begin{table}[!h]
+## \centering
+## \caption{\label{tab:unnamed-chunk-4}Median Elasticity matrix}
+## \centering
+## \begin{tabular}[t]{lrrrrrrrrrr}
+## \toprule
+##   & PEPSI COLA N/R & PEPSI COLA N.R. BOTT & DIET PEPSI N.R. BOTT & CAFFEINE FREE PEPSI & DIET PEPSI CAFFEINE & DOM ORANGE SODA & COCA-COLA CLASSIC CA & COCA-COLA CLASSIC & COKE DIET CANS & DR PEPPER\\
+## \midrule
+## PEPSI COLA N/R & -3.61050 & 0.03905 & 0.03905 & 0.03905 & 0.03905 & 0.03905 & 0.03905 & 0.03905 & 0.03905 & 0.03905\\
+## PEPSI COLA N.R. BOTT & 0.00594 & -4.14686 & 0.00594 & 0.00594 & 0.00594 & 0.00594 & 0.00594 & 0.00594 & 0.00594 & 0.00594\\
+## DIET PEPSI N.R. BOTT & 0.00396 & 0.00396 & -4.14885 & 0.00396 & 0.00396 & 0.00396 & 0.00396 & 0.00396 & 0.00396 & 0.00396\\
+## CAFFEINE FREE PEPSI & 0.01155 & 0.01155 & 0.01155 & -3.90668 & 0.01155 & 0.01155 & 0.01155 & 0.01155 & 0.01155 & 0.01155\\
+## DIET PEPSI CAFFEINE & 0.01097 & 0.01097 & 0.01097 & 0.01097 & -3.90732 & 0.01097 & 0.01097 & 0.01097 & 0.01097 & 0.01097\\
+## \addlinespace
+## DOM ORANGE SODA & 0.02057 & 0.02057 & 0.02057 & 0.02057 & 0.02057 & -3.28010 & 0.02057 & 0.02057 & 0.02057 & 0.02057\\
+## COCA-COLA CLASSIC CA & 0.01222 & 0.01222 & 0.01222 & 0.01222 & 0.01222 & 0.01222 & -6.87568 & 0.01222 & 0.01222 & 0.01222\\
+## COCA-COLA CLASSIC & 0.02636 & 0.02636 & 0.02636 & 0.02636 & 0.02636 & 0.02636 & 0.02636 & -3.62885 & 0.02636 & 0.02636\\
+## COKE DIET CANS & 0.01006 & 0.01006 & 0.01006 & 0.01006 & 0.01006 & 0.01006 & 0.01006 & 0.01006 & -6.87803 & 0.01006\\
+## DR PEPPER & 0.00479 & 0.00479 & 0.00479 & 0.00479 & 0.00479 & 0.00479 & 0.00479 & 0.00479 & 0.00479 & -3.64807\\
+## \bottomrule
+## \end{tabular}
+## \end{table}
+\end{verbatim}
+
+\hypertarget{setup-function-for-q5-q6}{%
+\subsection{Setup function for Q5 \&
+Q6}\label{setup-function-for-q5-q6}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# compute markup and marginal cost}
+\NormalTok{compute\_markup }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(own\_elas\_jt, closs\_elas\_jt,  owner\_mat, }\AttributeTok{is\_Multi=}\ConstantTok{FALSE}\NormalTok{) \{}
+  
+\NormalTok{  unique\_week }\OtherTok{\textless{}{-}} \FunctionTok{unique}\NormalTok{(own\_elas\_jt}\SpecialCharTok{$}\NormalTok{week)}
+\NormalTok{  unique\_store }\OtherTok{\textless{}{-}} \FunctionTok{unique}\NormalTok{(own\_elas\_jt}\SpecialCharTok{$}\NormalTok{store)}
+  
+\NormalTok{  market\_comb }\OtherTok{\textless{}{-}} \FunctionTok{expand.grid}\NormalTok{(}\AttributeTok{week =}\NormalTok{ unique\_week, }\AttributeTok{store =}\NormalTok{ unique\_store)}
+  
+  \CommentTok{\# store list of markup and mc}
+\NormalTok{  markup\_mc\_list }\OtherTok{\textless{}{-}} \FunctionTok{vector}\NormalTok{(}\StringTok{"list"}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(market\_comb))}
+  
+  \CommentTok{\# calc markup and mc for each market}
+  \ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\FunctionTok{nrow}\NormalTok{(market\_comb)) \{}
+    
+\NormalTok{    week\_i }\OtherTok{\textless{}{-}}\NormalTok{ market\_comb}\SpecialCharTok{$}\NormalTok{week[i]}
+\NormalTok{    store\_i }\OtherTok{\textless{}{-}}\NormalTok{ market\_comb}\SpecialCharTok{$}\NormalTok{store[i]}
+    
+    \CommentTok{\# subset of a particular market}
+\NormalTok{    sub\_own\_elas }\OtherTok{\textless{}{-}}\NormalTok{ own\_elas\_jt }\SpecialCharTok{|\textgreater{}} \FunctionTok{filter}\NormalTok{(week }\SpecialCharTok{==}\NormalTok{ week\_i }\SpecialCharTok{\&}\NormalTok{ store }\SpecialCharTok{==}\NormalTok{ store\_i)}
+\NormalTok{    sub\_cross\_elas }\OtherTok{\textless{}{-}}\NormalTok{ cross\_elas\_jt }\SpecialCharTok{|\textgreater{}} \FunctionTok{filter}\NormalTok{(week }\SpecialCharTok{==}\NormalTok{ week\_i }\SpecialCharTok{\&}\NormalTok{ store }\SpecialCharTok{==}\NormalTok{ store\_i)}
+    
+    \CommentTok{\# number of product}
+\NormalTok{    J }\OtherTok{\textless{}{-}} \FunctionTok{nrow}\NormalTok{(sub\_cross\_elas)}
+    
+    \CommentTok{\# if multi{-}product bertrand nash}
+    \ControlFlowTok{if}\NormalTok{ (is\_Multi) \{}
+      \ControlFlowTok{for}\NormalTok{ (j }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{J) \{}
+        \ControlFlowTok{for}\NormalTok{ (k }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{J) \{}
+          \CommentTok{\# if j\textquotesingle{}s brand is equal to k\textquotesingle{}s brand, take 1 }
+          \ControlFlowTok{if}\NormalTok{ (sub\_cross\_elas}\SpecialCharTok{$}\NormalTok{Brand[j] }\SpecialCharTok{==}\NormalTok{ sub\_cross\_elas}\SpecialCharTok{$}\NormalTok{Brand[k])\{}
+\NormalTok{            owner\_mat[j,k] }\OtherTok{=} \DecValTok{1}
+\NormalTok{          \}}
+\NormalTok{        \}}
+\NormalTok{      \}}
+\NormalTok{    \}}
+    
+    \CommentTok{\# calculate elasticity matrix}
+\NormalTok{    elas\_mat }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\FunctionTok{rep}\NormalTok{(sub\_cross\_elas}\SpecialCharTok{$}\NormalTok{cross\_elas, J), }\AttributeTok{nrow =}\NormalTok{ J, }\AttributeTok{ncol =}\NormalTok{ J)}
+    \FunctionTok{diag}\NormalTok{(elas\_mat) }\OtherTok{\textless{}{-}}\NormalTok{ sub\_own\_elas}\SpecialCharTok{$}\NormalTok{own\_elas}
+    
+    \CommentTok{\# calculate matrix S(p)}
+\NormalTok{    price\_mat }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\FunctionTok{rep}\NormalTok{((}\DecValTok{1}\SpecialCharTok{/}\NormalTok{sub\_cross\_elas}\SpecialCharTok{$}\NormalTok{price), J), }\AttributeTok{nrow =}\NormalTok{ J, }\AttributeTok{ncol =}\NormalTok{ J)}
+\NormalTok{    share\_mat }\OtherTok{\textless{}{-}} \FunctionTok{t}\NormalTok{(}\FunctionTok{matrix}\NormalTok{(}\FunctionTok{rep}\NormalTok{(sub\_cross\_elas}\SpecialCharTok{$}\NormalTok{s\_jt, J), }\AttributeTok{nrow =}\NormalTok{ J, }\AttributeTok{ncol =}\NormalTok{ J))}
+\NormalTok{    S\_p\_mat }\OtherTok{\textless{}{-}}\NormalTok{ (}\SpecialCharTok{{-}}\DecValTok{1}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ elas\_mat }\SpecialCharTok{*}\NormalTok{ price\_mat }\SpecialCharTok{*}\NormalTok{ share\_mat}
+    
+    \CommentTok{\# calculate markup for a paticular market}
+\NormalTok{    D\_p\_mat }\OtherTok{\textless{}{-}}\NormalTok{ owner\_mat }\SpecialCharTok{*}\NormalTok{ S\_p\_mat}
+\NormalTok{    markup }\OtherTok{\textless{}{-}} \FunctionTok{solve}\NormalTok{(D\_p\_mat) }\SpecialCharTok{\%*\%}\NormalTok{ sub\_cross\_elas}\SpecialCharTok{$}\NormalTok{s\_jt}
+\NormalTok{    mc }\OtherTok{\textless{}{-}}\NormalTok{ sub\_cross\_elas}\SpecialCharTok{$}\NormalTok{price }\SpecialCharTok{{-}}\NormalTok{ markup}
+    
+\NormalTok{    return\_df }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}\AttributeTok{week =}\NormalTok{ market\_comb}\SpecialCharTok{$}\NormalTok{week[i],}
+                            \AttributeTok{store =}\NormalTok{ market\_comb}\SpecialCharTok{$}\NormalTok{store[i],}
+                            \AttributeTok{Brand =}\NormalTok{ sub\_cross\_elas}\SpecialCharTok{$}\NormalTok{Brand, }
+                            \AttributeTok{upc =}\NormalTok{ sub\_cross\_elas}\SpecialCharTok{$}\NormalTok{upc, }
+                            \AttributeTok{descrip =}\NormalTok{ sub\_cross\_elas}\SpecialCharTok{$}\NormalTok{descrip, }
+                            \AttributeTok{price =}\NormalTok{ sub\_cross\_elas}\SpecialCharTok{$}\NormalTok{price, }
+                            \AttributeTok{move =}\NormalTok{ sub\_cross\_elas}\SpecialCharTok{$}\NormalTok{move, }
+                            \AttributeTok{markup =}\NormalTok{ markup, }
+                            \AttributeTok{mc =}\NormalTok{ mc) }\SpecialCharTok{\%\textgreater{}\%}
+      \FunctionTok{mutate}\NormalTok{(}\AttributeTok{markup\_dev\_p =}\NormalTok{ markup}\SpecialCharTok{/}\NormalTok{price)}
+    
+\NormalTok{    markup\_mc\_list[[i]] }\OtherTok{\textless{}{-}}\NormalTok{ return\_df}
+\NormalTok{  \}}
+  
+\NormalTok{  result\_df }\OtherTok{\textless{}{-}} \FunctionTok{do.call}\NormalTok{(rbind, markup\_mc\_list)}
+  \FunctionTok{return}\NormalTok{(result\_df)}
+\NormalTok{\} }
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{answer-to-q5}{%
+\subsection{Answer to Q5}\label{answer-to-q5}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\#\# Q5 Answer }\AlertTok{\#\#\#}
+
+\CommentTok{\# compute single product Nash equilibrium for each market}
+\NormalTok{J }\OtherTok{\textless{}{-}} \FunctionTok{nrow}\NormalTok{(cross\_elas\_df)}
+\NormalTok{Omega\_sin }\OtherTok{\textless{}{-}} \FunctionTok{diag}\NormalTok{(J)}
+\NormalTok{markup\_sin }\OtherTok{\textless{}{-}} \FunctionTok{compute\_markup}\NormalTok{(own\_elas\_jt, cross\_elas\_jt, Omega\_sin)}
+\NormalTok{markup\_sin\_med }\OtherTok{\textless{}{-}}\NormalTok{ markup\_sin }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{select}\NormalTok{(Brand, descrip, markup, markup\_dev\_p, mc) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{group\_by}\NormalTok{(Brand, descrip) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{summarize}\NormalTok{(}\AttributeTok{markup =} \FunctionTok{median}\NormalTok{(markup), }\AttributeTok{markup\_dev\_p =} \FunctionTok{median}\NormalTok{(markup\_dev\_p), }
+            \AttributeTok{mc =} \FunctionTok{median}\NormalTok{(mc), }\AttributeTok{.groups =} \StringTok{\textquotesingle{}drop\textquotesingle{}}\NormalTok{)}
+
+\CommentTok{\# compute multi product Nash equilibrium for each market}
+\NormalTok{Omega\_multi }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\DecValTok{0}\NormalTok{, J, J)}
+\NormalTok{markup\_multi }\OtherTok{\textless{}{-}} \FunctionTok{compute\_markup}\NormalTok{(own\_elas\_jt, cross\_elas\_jt, Omega\_multi, }\AttributeTok{is\_Multi=}\ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{markup\_multi\_med }\OtherTok{\textless{}{-}}\NormalTok{ markup\_multi }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{select}\NormalTok{(Brand, descrip, markup, markup\_dev\_p, mc) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{group\_by}\NormalTok{(Brand, descrip) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{summarize}\NormalTok{(}\AttributeTok{markup =} \FunctionTok{median}\NormalTok{(markup), }\AttributeTok{markup\_dev\_p =} \FunctionTok{median}\NormalTok{(markup\_dev\_p), }
+            \AttributeTok{mc =} \FunctionTok{median}\NormalTok{(mc), }\AttributeTok{.groups =} \StringTok{\textquotesingle{}drop\textquotesingle{}}\NormalTok{)}
+
+\CommentTok{\# joint pricing of all brands}
+\NormalTok{J }\OtherTok{\textless{}{-}} \FunctionTok{nrow}\NormalTok{(cross\_elas\_df)}
+\NormalTok{Omega\_joint }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\DecValTok{1}\NormalTok{, }\AttributeTok{nrow =}\NormalTok{ J, }\AttributeTok{ncol =}\NormalTok{ J)}
+\NormalTok{markup\_joint }\OtherTok{\textless{}{-}} \FunctionTok{compute\_markup}\NormalTok{(own\_elas\_jt, cross\_elas\_jt, Omega\_joint)}
+\NormalTok{markup\_joint\_med }\OtherTok{\textless{}{-}}\NormalTok{ markup\_joint }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{select}\NormalTok{(Brand, descrip, markup, markup\_dev\_p, mc) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{group\_by}\NormalTok{(Brand, descrip) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{summarize}\NormalTok{(}\AttributeTok{markup =} \FunctionTok{median}\NormalTok{(markup), }\AttributeTok{markup\_dev\_p =} \FunctionTok{median}\NormalTok{(markup\_dev\_p), }
+            \AttributeTok{mc =} \FunctionTok{median}\NormalTok{(mc), }\AttributeTok{.groups =} \StringTok{\textquotesingle{}drop\textquotesingle{}}\NormalTok{)}
+
+\NormalTok{res\_markup }\OtherTok{\textless{}{-}} \FunctionTok{left\_join}\NormalTok{(markup\_sin\_med }\SpecialCharTok{|\textgreater{}} \FunctionTok{select}\NormalTok{(Brand, descrip, markup, markup\_dev\_p),}
+\NormalTok{                        markup\_multi\_med }\SpecialCharTok{|\textgreater{}} \FunctionTok{select}\NormalTok{(Brand, descrip, markup, markup\_dev\_p),}
+                        \AttributeTok{by =} \FunctionTok{c}\NormalTok{(}\StringTok{"Brand"}\NormalTok{, }\StringTok{"descrip"}\NormalTok{)) }\SpecialCharTok{|\textgreater{}}
+                \FunctionTok{left\_join}\NormalTok{(markup\_joint\_med }\SpecialCharTok{|\textgreater{}} \FunctionTok{select}\NormalTok{(Brand, descrip, markup, markup\_dev\_p),}
+                          \AttributeTok{by =} \FunctionTok{c}\NormalTok{(}\StringTok{"Brand"}\NormalTok{, }\StringTok{"descrip"}\NormalTok{), }\AttributeTok{suffix =} \FunctionTok{c}\NormalTok{(}\StringTok{".multi"}\NormalTok{, }\StringTok{".joint"}\NormalTok{))}
+
+\NormalTok{res\_markup }\OtherTok{\textless{}{-}}\NormalTok{ res\_markup }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  knitr}\SpecialCharTok{::}\FunctionTok{kable}\NormalTok{(}\AttributeTok{format =} \StringTok{"latex"}\NormalTok{, }\AttributeTok{booktabs =} \ConstantTok{TRUE}\NormalTok{, }\AttributeTok{caption =} \StringTok{"Estimated markup"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  kableExtra}\SpecialCharTok{::}\FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{latex\_options =} \StringTok{"hold\_position"}\NormalTok{)}
+\FunctionTok{cat}\NormalTok{(res\_markup)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## \begin{table}[!h]
+## \centering
+## \caption{\label{tab:unnamed-chunk-6}Estimated markup}
+## \centering
+## \begin{tabular}[t]{rlrrrrrr}
+## \toprule
+## Brand & descrip & markup.x & markup\_dev\_p.x & markup.y & markup\_dev\_p.y & markup & markup\_dev\_p\\
+## \midrule
+## 12000 & CAFFEINE FREE PEPSI & 0.00564 & 0.25597 & 0.00574 & 0.25908 & 0.00594 & 0.27667\\
+## 12000 & DIET PEPSI CAFFEINE & 0.00564 & 0.25593 & 0.00574 & 0.25908 & 0.00594 & 0.27667\\
+## 12000 & DIET PEPSI N.R. BOTT & 0.00563 & 0.24103 & 0.00574 & 0.24528 & 0.00594 & 0.25294\\
+## 12000 & PEPSI COLA N.R. BOTT & 0.00563 & 0.24115 & 0.00574 & 0.24528 & 0.00594 & 0.25294\\
+## 12000 & PEPSI COLA N/R & 0.00568 & 0.27697 & 0.00574 & 0.27895 & 0.00594 & 0.29092\\
+## \addlinespace
+## 38281 & DOM ORANGE SODA & 0.00566 & 0.30487 & 0.00566 & 0.30487 & 0.00594 & 0.31504\\
+## 49000 & COCA-COLA CLASSIC & 0.00566 & 0.27557 & 0.00570 & 0.27836 & 0.00594 & 0.29169\\
+## 49000 & COCA-COLA CLASSIC CA & 0.00564 & 0.14544 & 0.00570 & 0.14748 & 0.00594 & 0.15593\\
+## 49000 & COKE DIET CANS & 0.00563 & 0.14539 & 0.00570 & 0.14748 & 0.00594 & 0.15593\\
+## 54900 & DR PEPPER & 0.00563 & 0.27412 & 0.00563 & 0.27412 & 0.00594 & 0.29885\\
+## \bottomrule
+## \end{tabular}
+## \end{table}
+\end{verbatim}
+
+\hypertarget{answer-to-q6}{%
+\subsection{Answer to Q6}\label{answer-to-q6}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{res\_mc }\OtherTok{\textless{}{-}} \FunctionTok{left\_join}\NormalTok{(markup\_sin\_med }\SpecialCharTok{|\textgreater{}} \FunctionTok{select}\NormalTok{(Brand, descrip, mc),}
+\NormalTok{                        markup\_multi\_med }\SpecialCharTok{|\textgreater{}} \FunctionTok{select}\NormalTok{(Brand, descrip, mc),}
+                        \AttributeTok{by =} \FunctionTok{c}\NormalTok{(}\StringTok{"Brand"}\NormalTok{, }\StringTok{"descrip"}\NormalTok{)) }\SpecialCharTok{|\textgreater{}}
+                \FunctionTok{left\_join}\NormalTok{(markup\_joint\_med }\SpecialCharTok{|\textgreater{}} \FunctionTok{select}\NormalTok{(Brand, descrip, mc),}
+                          \AttributeTok{by =} \FunctionTok{c}\NormalTok{(}\StringTok{"Brand"}\NormalTok{, }\StringTok{"descrip"}\NormalTok{), }\AttributeTok{suffix =} \FunctionTok{c}\NormalTok{(}\StringTok{".multi"}\NormalTok{, }\StringTok{".joint"}\NormalTok{))}
+
+\NormalTok{res\_mc }\OtherTok{\textless{}{-}}\NormalTok{ res\_mc }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  knitr}\SpecialCharTok{::}\FunctionTok{kable}\NormalTok{(}\AttributeTok{format =} \StringTok{"latex"}\NormalTok{, }\AttributeTok{booktabs =} \ConstantTok{TRUE}\NormalTok{, }\AttributeTok{caption =} \StringTok{"Estimated markup"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  kableExtra}\SpecialCharTok{::}\FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{latex\_options =} \StringTok{"hold\_position"}\NormalTok{)}
+\FunctionTok{cat}\NormalTok{(res\_mc)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## \begin{table}[!h]
+## \centering
+## \caption{\label{tab:unnamed-chunk-7}Estimated markup}
+## \centering
+## \begin{tabular}[t]{rlrrr}
+## \toprule
+## Brand & descrip & mc.x & mc.y & mc\\
+## \midrule
+## 12000 & CAFFEINE FREE PEPSI & 0.01639 & 0.01632 & 0.01601\\
+## 12000 & DIET PEPSI CAFFEINE & 0.01639 & 0.01632 & 0.01601\\
+## 12000 & DIET PEPSI N.R. BOTT & 0.01773 & 0.01763 & 0.01746\\
+## 12000 & PEPSI COLA N.R. BOTT & 0.01773 & 0.01763 & 0.01746\\
+## 12000 & PEPSI COLA N/R & 0.01486 & 0.01482 & 0.01461\\
+## \addlinespace
+## 38281 & DOM ORANGE SODA & 0.01289 & 0.01289 & 0.01274\\
+## 49000 & COCA-COLA CLASSIC & 0.01489 & 0.01486 & 0.01461\\
+## 49000 & COCA-COLA CLASSIC CA & 0.03311 & 0.03304 & 0.03277\\
+## 49000 & COKE DIET CANS & 0.03312 & 0.03304 & 0.03277\\
+## 54900 & DR PEPPER & 0.01492 & 0.01492 & 0.01434\\
+## \bottomrule
+## \end{tabular}
+## \end{table}
+\end{verbatim}
+
+\hypertarget{setup-function-for-q7}{%
+\subsection{Setup function for Q7}\label{setup-function-for-q7}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{compute\_price\_eq }\OtherTok{=} \ControlFlowTok{function}\NormalTok{(df, init\_p, owner\_mat, alpha\_hat, beta\_hat, }\AttributeTok{is\_Multi =}\ConstantTok{TRUE}\NormalTok{)\{}
+  
+  \CommentTok{\# iteration stop parameters}
+\NormalTok{  epsilon }\OtherTok{\textless{}{-}} \FloatTok{1e{-}5}
+\NormalTok{  df}\SpecialCharTok{$}\NormalTok{price }\OtherTok{\textless{}{-}}\NormalTok{ init\_p}
+\NormalTok{  error }\OtherTok{\textless{}{-}} \DecValTok{10000}
+\NormalTok{  count\_max }\OtherTok{\textless{}{-}} \DecValTok{20}
+\NormalTok{  counter }\OtherTok{\textless{}{-}} \DecValTok{0}
+  
+  \ControlFlowTok{while}\NormalTok{ (error }\SpecialCharTok{\textgreater{}}\NormalTok{ epsilon }\SpecialCharTok{\&}\NormalTok{ counter }\SpecialCharTok{\textless{}}\NormalTok{ count\_max) \{}
+    \CommentTok{\# check counter}
+\NormalTok{    counter }\OtherTok{=}\NormalTok{ counter }\SpecialCharTok{+} \DecValTok{1}
+    \FunctionTok{print}\NormalTok{(counter)}
+    \FunctionTok{print}\NormalTok{(error)}
+    
+\NormalTok{    unique\_week }\OtherTok{\textless{}{-}} \FunctionTok{unique}\NormalTok{(df}\SpecialCharTok{$}\NormalTok{week)}
+\NormalTok{    unique\_store }\OtherTok{\textless{}{-}} \FunctionTok{unique}\NormalTok{(df}\SpecialCharTok{$}\NormalTok{store)}
+    
+\NormalTok{    market\_comb }\OtherTok{\textless{}{-}} \FunctionTok{expand.grid}\NormalTok{(}\AttributeTok{week =}\NormalTok{ unique\_week, }\AttributeTok{store =}\NormalTok{ unique\_store)}
+    
+    \CommentTok{\# store list of p}
+\NormalTok{    p\_k\_list }\OtherTok{\textless{}{-}} \FunctionTok{vector}\NormalTok{(}\StringTok{"list"}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(market\_comb))}
+    
+    \CommentTok{\# calc eta\_(p) for each market}
+    \ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\FunctionTok{nrow}\NormalTok{(market\_comb)) \{}
+      
+\NormalTok{      week\_i }\OtherTok{\textless{}{-}}\NormalTok{ market\_comb}\SpecialCharTok{$}\NormalTok{week[i]}
+\NormalTok{      store\_i }\OtherTok{\textless{}{-}}\NormalTok{ market\_comb}\SpecialCharTok{$}\NormalTok{store[i]}
+      
+      \CommentTok{\# subset of a particular market}
+\NormalTok{      df\_t }\OtherTok{\textless{}{-}}\NormalTok{ df }\SpecialCharTok{|\textgreater{}} \FunctionTok{filter}\NormalTok{(week }\SpecialCharTok{==}\NormalTok{ week\_i }\SpecialCharTok{\&}\NormalTok{ store }\SpecialCharTok{==}\NormalTok{ store\_i)}
+      
+      \CommentTok{\# compute own elasticity for each market}
+\NormalTok{      sub\_own\_elas }\OtherTok{\textless{}{-}}\NormalTok{ df\_t }\SpecialCharTok{|\textgreater{}}
+        \FunctionTok{select}\NormalTok{(week, store, upc, descrip, price, move, s\_jt, Brand, mc) }\SpecialCharTok{|\textgreater{}}
+        \FunctionTok{mutate}\NormalTok{(}\AttributeTok{own\_elas =}\NormalTok{ alpha\_hat }\SpecialCharTok{*}\NormalTok{ price }\SpecialCharTok{*}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ s\_jt)) }
+      
+      \CommentTok{\# compute cross elasticity for each market}
+\NormalTok{      sub\_cross\_elas }\OtherTok{\textless{}{-}}\NormalTok{ df\_t }\SpecialCharTok{|\textgreater{}}
+        \FunctionTok{select}\NormalTok{(week, store, upc, descrip, price, move, s\_jt, Brand, mc) }\SpecialCharTok{|\textgreater{}}
+        \FunctionTok{mutate}\NormalTok{(}\AttributeTok{cross\_elas =}\NormalTok{ (}\SpecialCharTok{{-}}\DecValTok{1}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ alpha\_hat }\SpecialCharTok{*}\NormalTok{ price }\SpecialCharTok{*}\NormalTok{ s\_jt)}
+      
+      \CommentTok{\# number of product}
+\NormalTok{      J }\OtherTok{\textless{}{-}} \FunctionTok{nrow}\NormalTok{(sub\_cross\_elas)}
+      
+      \CommentTok{\# if multi{-}product bertrand nash}
+      \ControlFlowTok{if}\NormalTok{ (is\_Multi) \{}
+        \ControlFlowTok{for}\NormalTok{ (j }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{J) \{}
+          \ControlFlowTok{for}\NormalTok{ (k }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{J) \{}
+            \CommentTok{\# if j\textquotesingle{}s brand is equal to k\textquotesingle{}s brand, take 1 }
+            \ControlFlowTok{if}\NormalTok{ (sub\_cross\_elas}\SpecialCharTok{$}\NormalTok{Brand[j] }\SpecialCharTok{==}\NormalTok{ sub\_cross\_elas}\SpecialCharTok{$}\NormalTok{Brand[k])\{}
+\NormalTok{              owner\_mat[j,k] }\OtherTok{=} \DecValTok{1}
+\NormalTok{            \}}
+\NormalTok{          \}}
+\NormalTok{        \}}
+\NormalTok{      \}}
+      
+      \CommentTok{\# calculate elasticity matrix}
+\NormalTok{      elas\_mat }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\FunctionTok{rep}\NormalTok{(sub\_cross\_elas}\SpecialCharTok{$}\NormalTok{cross\_elas, J), }\AttributeTok{nrow =}\NormalTok{ J, }\AttributeTok{ncol =}\NormalTok{ J)}
+      \FunctionTok{diag}\NormalTok{(elas\_mat) }\OtherTok{\textless{}{-}}\NormalTok{ sub\_own\_elas}\SpecialCharTok{$}\NormalTok{own\_elas}
+      
+      \CommentTok{\# calculate matrix S(p)}
+\NormalTok{      price\_mat }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\FunctionTok{rep}\NormalTok{((}\DecValTok{1}\SpecialCharTok{/}\NormalTok{sub\_cross\_elas}\SpecialCharTok{$}\NormalTok{price), J), }\AttributeTok{nrow =}\NormalTok{ J, }\AttributeTok{ncol =}\NormalTok{ J)}
+\NormalTok{      share\_mat }\OtherTok{\textless{}{-}} \FunctionTok{t}\NormalTok{(}\FunctionTok{matrix}\NormalTok{(}\FunctionTok{rep}\NormalTok{(sub\_cross\_elas}\SpecialCharTok{$}\NormalTok{s\_jt, J), }\AttributeTok{nrow =}\NormalTok{ J, }\AttributeTok{ncol =}\NormalTok{ J))}
+\NormalTok{      S\_p\_mat }\OtherTok{\textless{}{-}}\NormalTok{ (}\SpecialCharTok{{-}}\DecValTok{1}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ elas\_mat }\SpecialCharTok{*}\NormalTok{ price\_mat }\SpecialCharTok{*}\NormalTok{ share\_mat}
+      
+      \CommentTok{\# calculate p\_k for a paticular market}
+\NormalTok{      D\_p\_mat }\OtherTok{\textless{}{-}}\NormalTok{ owner\_mat }\SpecialCharTok{*}\NormalTok{ S\_p\_mat}
+\NormalTok{      p\_k }\OtherTok{\textless{}{-}}\NormalTok{ sub\_cross\_elas}\SpecialCharTok{$}\NormalTok{mc }\SpecialCharTok{+} \FunctionTok{solve}\NormalTok{(D\_p\_mat) }\SpecialCharTok{\%*\%}\NormalTok{ sub\_cross\_elas}\SpecialCharTok{$}\NormalTok{s\_jt}
+      
+      \CommentTok{\# calculate new share}
+\NormalTok{      X\_j }\OtherTok{\textless{}{-}} \FunctionTok{as.matrix}\NormalTok{(df\_t[, }\FunctionTok{grepl}\NormalTok{(}\StringTok{"dummy\_"}\NormalTok{, }\FunctionTok{colnames}\NormalTok{(df\_t))])}
+\NormalTok{      xi\_hat }\OtherTok{\textless{}{-}} \FunctionTok{log}\NormalTok{(df\_t}\SpecialCharTok{$}\NormalTok{s\_jt}\SpecialCharTok{/}\NormalTok{df\_t}\SpecialCharTok{$}\NormalTok{s\_0t) }\SpecialCharTok{{-}}\NormalTok{ (alpha\_hat }\SpecialCharTok{*}\NormalTok{ df\_t}\SpecialCharTok{$}\NormalTok{price }\SpecialCharTok{+}\NormalTok{ X\_j }\SpecialCharTok{\%*\%}\NormalTok{ beta\_hat)}
+\NormalTok{      numerator }\OtherTok{\textless{}{-}} \FunctionTok{exp}\NormalTok{(alpha\_hat }\SpecialCharTok{*}\NormalTok{ p\_k }\SpecialCharTok{+}\NormalTok{ X\_j }\SpecialCharTok{\%*\%}\NormalTok{ beta\_hat }\SpecialCharTok{+}\NormalTok{ xi\_hat)}
+\NormalTok{      s\_jt\_old }\OtherTok{\textless{}{-}}\NormalTok{ df}\SpecialCharTok{$}\NormalTok{s\_jt}
+\NormalTok{      s\_jt }\OtherTok{\textless{}{-}}\NormalTok{ numerator }\SpecialCharTok{/}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{+} \FunctionTok{sum}\NormalTok{(numerator))}
+      
+      \CommentTok{\# to dataframe }
+\NormalTok{      market\_df }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}\AttributeTok{week =}\NormalTok{ market\_comb}\SpecialCharTok{$}\NormalTok{week[i],}
+                              \AttributeTok{store =}\NormalTok{ market\_comb}\SpecialCharTok{$}\NormalTok{store[i],}
+                              \AttributeTok{upc =}\NormalTok{ sub\_cross\_elas}\SpecialCharTok{$}\NormalTok{upc,}
+                              \AttributeTok{s\_jt\_post =}\NormalTok{ s\_jt,}
+                              \AttributeTok{price\_post =}\NormalTok{ p\_k)}
+      \CommentTok{\# store dataframe}
+\NormalTok{      p\_k\_list[[i]] }\OtherTok{\textless{}{-}}\NormalTok{ market\_df}
+\NormalTok{    \}}
+\NormalTok{    return\_df }\OtherTok{\textless{}{-}} \FunctionTok{do.call}\NormalTok{(rbind, p\_k\_list)}
+    
+    \CommentTok{\#update}
+\NormalTok{    error }\OtherTok{\textless{}{-}} \FunctionTok{max}\NormalTok{(}\FunctionTok{abs}\NormalTok{(return\_df}\SpecialCharTok{$}\NormalTok{price\_post }\SpecialCharTok{{-}}\NormalTok{ df}\SpecialCharTok{$}\NormalTok{price))}
+\NormalTok{    df}\SpecialCharTok{$}\NormalTok{price }\OtherTok{\textless{}{-}}\NormalTok{ return\_df}\SpecialCharTok{$}\NormalTok{price\_post}
+\NormalTok{    df}\SpecialCharTok{$}\NormalTok{s\_jt }\OtherTok{\textless{}{-}}\NormalTok{ return\_df}\SpecialCharTok{$}\NormalTok{s\_jt\_post}
+\NormalTok{  \}}
+  \FunctionTok{return}\NormalTok{(return\_df)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{answer-to-q7}{%
+\subsection{Answer to Q7}\label{answer-to-q7}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# compute price equilibrium for counterfactural exercise}
+\NormalTok{df }\OtherTok{\textless{}{-}} \FunctionTok{left\_join}\NormalTok{(df, markup\_multi }\SpecialCharTok{|\textgreater{}} \FunctionTok{select}\NormalTok{(store, week, upc, mc),}
+                \AttributeTok{by =} \FunctionTok{c}\NormalTok{(}\StringTok{"store"}\NormalTok{, }\StringTok{"week"}\NormalTok{, }\StringTok{"upc"}\NormalTok{))}
+
+\CommentTok{\# initial price}
+\NormalTok{init\_p }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\FloatTok{0.025}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df))}
+
+\CommentTok{\# computation result}
+\NormalTok{alpha\_hat }\OtherTok{\textless{}{-}}\NormalTok{ model1\_IV}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"fit\_price"}\NormalTok{]}
+\NormalTok{beta\_hat }\OtherTok{\textless{}{-}} \FunctionTok{as.vector}\NormalTok{(model1\_IV}\SpecialCharTok{$}\NormalTok{coefficients)[}\DecValTok{3}\SpecialCharTok{:}\DecValTok{11}\NormalTok{]}
+\NormalTok{df }\OtherTok{\textless{}{-}}\NormalTok{ df }\SpecialCharTok{|\textgreater{}} \FunctionTok{mutate}\NormalTok{(}\AttributeTok{mc\_post =}\NormalTok{ mc }\SpecialCharTok{*} \FloatTok{1.1}\NormalTok{)}\CommentTok{\# add 10\% increase}
+\NormalTok{p\_eq\_ct }\OtherTok{\textless{}{-}}\NormalTok{ df }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{mc =}\NormalTok{ mc\_post) }\SpecialCharTok{\%\textgreater{}\%} \CommentTok{\# set marginal cost 10\% increase}
+  \FunctionTok{compute\_price\_eq}\NormalTok{(., init\_p, Omega\_multi, alpha\_hat, beta\_hat)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 1
+## [1] 10000
+## [1] 2
+## [1] 0.01859
+## [1] 3
+## [1] 0.024061
+## [1] 4
+## [1] 0.022543
+## [1] 5
+## [1] 0.004114
+## [1] 6
+## [1] 0.0038043
+## [1] 7
+## [1] 0.0025594
+## [1] 8
+## [1] 0.0043849
+## [1] 9
+## [1] 0.0033577
+## [1] 10
+## [1] 0.0029579
+## [1] 11
+## [1] 0.0019816
+## [1] 12
+## [1] 0.0021967
+## [1] 13
+## [1] 0.0024741
+## [1] 14
+## [1] 0.0027788
+## [1] 15
+## [1] 0.0034923
+## [1] 16
+## [1] 0.0037226
+## [1] 17
+## [1] 0.0036609
+## [1] 18
+## [1] 0.0035939
+## [1] 19
+## [1] 0.0028778
+## [1] 20
+## [1] 0.0015755
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# join result}
+\NormalTok{df }\OtherTok{\textless{}{-}} \FunctionTok{left\_join}\NormalTok{(df, p\_eq\_ct, }\FunctionTok{c}\NormalTok{(}\StringTok{"store"}\NormalTok{, }\StringTok{"week"}\NormalTok{, }\StringTok{"upc"}\NormalTok{)) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{price\_pre =}\NormalTok{ price)}
+
+\CommentTok{\# results to tex}
+\NormalTok{res\_p\_eq\_ct }\OtherTok{\textless{}{-}}\NormalTok{ df }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{select}\NormalTok{(Brand, descrip, price\_pre, price\_post, mc, mc\_post) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{group\_by}\NormalTok{(Brand, descrip) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{summarize}\NormalTok{(}\AttributeTok{price\_pre =} \FunctionTok{median}\NormalTok{(price\_pre),}
+            \AttributeTok{price\_post =} \FunctionTok{median}\NormalTok{(price\_post), }
+            \AttributeTok{mc\_price\_share\_diff =} \FunctionTok{median}\NormalTok{((mc\_post }\SpecialCharTok{{-}}\NormalTok{ mc)}\SpecialCharTok{/}\NormalTok{price\_post),}
+            \AttributeTok{.groups =} \StringTok{\textquotesingle{}drop\textquotesingle{}}\NormalTok{) }\SpecialCharTok{|\textgreater{}}
+\NormalTok{  knitr}\SpecialCharTok{::}\FunctionTok{kable}\NormalTok{(}\AttributeTok{format =} \StringTok{"latex"}\NormalTok{, }\AttributeTok{booktabs =} \ConstantTok{TRUE}\NormalTok{, }
+               \AttributeTok{caption =} \StringTok{"Counterfactural Exercise (MC increases by 10\%)"}\NormalTok{) }\SpecialCharTok{|\textgreater{}}
+\NormalTok{  kableExtra}\SpecialCharTok{::}\FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{latex\_options =} \StringTok{"hold\_position"}\NormalTok{)}
+\FunctionTok{cat}\NormalTok{(res\_p\_eq\_ct)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## \begin{table}[!h]
+## \centering
+## \caption{\label{tab:unnamed-chunk-9}Counterfactural Exercise (MC increases by 10%)}
+## \centering
+## \begin{tabular}[t]{rlrrr}
+## \toprule
+## Brand & descrip & price\_pre & price\_post & mc\_price\_share\_diff\\
+## \midrule
+## 12000 & CAFFEINE FREE PEPSI & 0.02203 & 0.02372 & 0.06883\\
+## 12000 & DIET PEPSI CAFFEINE & 0.02203 & 0.02372 & 0.06883\\
+## 12000 & DIET PEPSI N.R. BOTT & 0.02336 & 0.02516 & 0.07007\\
+## 12000 & PEPSI COLA N.R. BOTT & 0.02336 & 0.02516 & 0.07007\\
+## 12000 & PEPSI COLA N/R & 0.02055 & 0.02204 & 0.06723\\
+## \addlinespace
+## 38281 & DOM ORANGE SODA & 0.01854 & 0.01990 & 0.06476\\
+## 49000 & COCA-COLA CLASSIC & 0.02055 & 0.02201 & 0.06748\\
+## 49000 & COCA-COLA CLASSIC CA & 0.03875 & 0.04203 & 0.07861\\
+## 49000 & COKE DIET CANS & 0.03875 & 0.04203 & 0.07861\\
+## 54900 & DR PEPPER & 0.02055 & 0.02204 & 0.06770\\
+## \bottomrule
+## \end{tabular}
+## \end{table}
+\end{verbatim}
+
+\hypertarget{setup-function-for-q8}{%
+\subsection{Setup function for Q8}\label{setup-function-for-q8}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{compute\_walfare }\OtherTok{=} \ControlFlowTok{function}\NormalTok{(df, alpha\_hat, beta\_hat)\{}
+  
+\NormalTok{    unique\_week }\OtherTok{\textless{}{-}} \FunctionTok{unique}\NormalTok{(df}\SpecialCharTok{$}\NormalTok{week)}
+\NormalTok{    unique\_store }\OtherTok{\textless{}{-}} \FunctionTok{unique}\NormalTok{(df}\SpecialCharTok{$}\NormalTok{store)}
+    
+    \CommentTok{\# market list}
+\NormalTok{    market\_comb }\OtherTok{\textless{}{-}} \FunctionTok{expand.grid}\NormalTok{(}\AttributeTok{week =}\NormalTok{ unique\_week, }\AttributeTok{store =}\NormalTok{ unique\_store)}
+    
+    \CommentTok{\# store list of p}
+\NormalTok{    walfare\_list }\OtherTok{\textless{}{-}} \FunctionTok{vector}\NormalTok{(}\StringTok{"list"}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(market\_comb))}
+    
+    \CommentTok{\# calculating walfare for each market}
+    \ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\FunctionTok{nrow}\NormalTok{(market\_comb)) \{}
+\NormalTok{      week\_i }\OtherTok{\textless{}{-}}\NormalTok{ market\_comb}\SpecialCharTok{$}\NormalTok{week[i]}
+\NormalTok{      store\_i }\OtherTok{\textless{}{-}}\NormalTok{ market\_comb}\SpecialCharTok{$}\NormalTok{store[i]}
+      
+      \CommentTok{\# subset of a particular market}
+\NormalTok{      df\_t }\OtherTok{\textless{}{-}}\NormalTok{ df }\SpecialCharTok{|\textgreater{}} \FunctionTok{filter}\NormalTok{(week }\SpecialCharTok{==}\NormalTok{ week\_i }\SpecialCharTok{\&}\NormalTok{ store }\SpecialCharTok{==}\NormalTok{ store\_i)}
+      
+      \CommentTok{\# matrix X\_j}
+\NormalTok{      X\_j }\OtherTok{\textless{}{-}} \FunctionTok{as.matrix}\NormalTok{(df\_t[, }\FunctionTok{grepl}\NormalTok{(}\StringTok{"dummy\_"}\NormalTok{, }\FunctionTok{colnames}\NormalTok{(df\_t))])}
+      
+      \CommentTok{\# calculate pre delta\_jt}
+\NormalTok{      xi\_hat }\OtherTok{\textless{}{-}} \FunctionTok{log}\NormalTok{(df\_t}\SpecialCharTok{$}\NormalTok{s\_jt\_old}\SpecialCharTok{/}\NormalTok{df\_t}\SpecialCharTok{$}\NormalTok{s\_0t) }\SpecialCharTok{{-}}\NormalTok{ (alpha\_hat }\SpecialCharTok{*}\NormalTok{ df\_t}\SpecialCharTok{$}\NormalTok{price\_old }\SpecialCharTok{+}\NormalTok{ X\_j }\SpecialCharTok{\%*\%}\NormalTok{ beta\_hat)}
+\NormalTok{      delta}\OtherTok{\textless{}{-}}\NormalTok{ alpha\_hat }\SpecialCharTok{*}\NormalTok{ df\_t}\SpecialCharTok{$}\NormalTok{price }\SpecialCharTok{+}\NormalTok{ X\_j }\SpecialCharTok{\%*\%}\NormalTok{ beta\_hat }\SpecialCharTok{+}\NormalTok{ xi\_hat}
+      
+      \CommentTok{\# caliculate CV based on Small and Rosen (1981)}
+      \CommentTok{\#CV \textless{}{-} (1 / ({-}1) * alpha\_hat) * (1+log(sum(exp(delta\_post))) {-} (1+ log(sum(exp(delta\_pre)))))}
+\NormalTok{      CS }\OtherTok{\textless{}{-}} \DecValTok{1}\SpecialCharTok{+}\FunctionTok{log}\NormalTok{(}\FunctionTok{sum}\NormalTok{(}\FunctionTok{exp}\NormalTok{(delta)))}
+      
+      \CommentTok{\# calculate producer surplus for each brand in a paticular market}
+\NormalTok{      M\_t }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(df\_t}\SpecialCharTok{$}\NormalTok{custcoun)}
+\NormalTok{      PS\_f\_t }\OtherTok{\textless{}{-}}\NormalTok{ df\_t }\SpecialCharTok{|\textgreater{}}
+        \FunctionTok{mutate}\NormalTok{(}\AttributeTok{calc\_profit =}\NormalTok{ (price }\SpecialCharTok{{-}}\NormalTok{ mc) }\SpecialCharTok{*}\NormalTok{ s\_jt }\SpecialCharTok{*}\NormalTok{ M\_t) }\SpecialCharTok{|\textgreater{}}
+        \FunctionTok{group\_by}\NormalTok{(Brand, week, store) }\SpecialCharTok{|\textgreater{}}
+        \FunctionTok{summarize}\NormalTok{(}\AttributeTok{calc\_profit =} \FunctionTok{sum}\NormalTok{(calc\_profit), }\AttributeTok{.groups =} \StringTok{\textquotesingle{}drop\textquotesingle{}}\NormalTok{)}
+      
+      \CommentTok{\# summation accross firm in the market}
+\NormalTok{      PS  }\OtherTok{\textless{}{-}}\NormalTok{  PS\_f\_t }\SpecialCharTok{|\textgreater{}}
+        \FunctionTok{summarize}\NormalTok{(}\AttributeTok{calc\_profit =} \FunctionTok{sum}\NormalTok{(calc\_profit), }\AttributeTok{.groups =} \StringTok{\textquotesingle{}drop\textquotesingle{}}\NormalTok{)}
+      
+      \CommentTok{\# to dataframe }
+\NormalTok{      walfare\_df }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}\AttributeTok{week =}\NormalTok{ week\_i,}
+                               \AttributeTok{store =}\NormalTok{ store\_i,}
+                               \AttributeTok{CS =}\NormalTok{ CS,}
+                               \AttributeTok{PS =}\NormalTok{ PS}\SpecialCharTok{$}\NormalTok{calc\_profit,}
+                               \AttributeTok{TS =}\NormalTok{ CS }\SpecialCharTok{+}\NormalTok{ PS}\SpecialCharTok{$}\NormalTok{calc\_profit)}
+      
+      \CommentTok{\# store dataframe}
+\NormalTok{      walfare\_list[[i]] }\OtherTok{\textless{}{-}}\NormalTok{ walfare\_df}
+\NormalTok{    \}}
+\NormalTok{    return\_df }\OtherTok{\textless{}{-}} \FunctionTok{do.call}\NormalTok{(rbind, walfare\_list)}
+    \FunctionTok{return}\NormalTok{(return\_df)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{answer-to-q8}{%
+\subsection{Answer to Q8}\label{answer-to-q8}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{walfare\_pre }\OtherTok{\textless{}{-}}\NormalTok{ df }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{price\_old =}\NormalTok{ price, }\AttributeTok{s\_jt\_old =}\NormalTok{ s\_jt) }\SpecialCharTok{|\textgreater{}} \CommentTok{\# set variables for xi}
+  \FunctionTok{compute\_walfare}\NormalTok{(alpha\_hat, beta\_hat)}
+
+\NormalTok{walfare\_post }\OtherTok{\textless{}{-}}\NormalTok{ df }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{price\_old =}\NormalTok{ price, }\AttributeTok{s\_jt\_old =}\NormalTok{ s\_jt,}
+         \AttributeTok{price =}\NormalTok{ price\_post, }\AttributeTok{mc =}\NormalTok{ mc\_post, }\AttributeTok{s\_jt =}\NormalTok{ s\_jt\_post) }\SpecialCharTok{|\textgreater{}} \CommentTok{\# use updated variables}
+  \FunctionTok{compute\_walfare}\NormalTok{(alpha\_hat, beta\_hat)}
+
+\NormalTok{Diff\_CS }\OtherTok{\textless{}{-}}\NormalTok{ walfare\_post}\SpecialCharTok{$}\NormalTok{CS }\SpecialCharTok{{-}}\NormalTok{ walfare\_pre}\SpecialCharTok{$}\NormalTok{CS}
+\NormalTok{Diff\_PS }\OtherTok{\textless{}{-}}\NormalTok{ walfare\_post}\SpecialCharTok{$}\NormalTok{PS }\SpecialCharTok{{-}}\NormalTok{ walfare\_pre}\SpecialCharTok{$}\NormalTok{PS}
+\NormalTok{Diff\_TS }\OtherTok{\textless{}{-}}\NormalTok{ walfare\_post}\SpecialCharTok{$}\NormalTok{TS }\SpecialCharTok{{-}}\NormalTok{ walfare\_pre}\SpecialCharTok{$}\NormalTok{TS}
+
+\CommentTok{\# results to tex}
+\NormalTok{res\_walfare }\OtherTok{\textless{}{-}}\NormalTok{ walfare\_post }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{Diff\_CS =}\NormalTok{ Diff\_CS, }\AttributeTok{Diff\_PS =}\NormalTok{ Diff\_PS, }\AttributeTok{Diff\_TS =}\NormalTok{ Diff\_TS) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{select}\NormalTok{(week, store, Diff\_CS, Diff\_PS, Diff\_TS) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{summarize}\NormalTok{(}\AttributeTok{sum\_Diff\_CS =} \FunctionTok{sum}\NormalTok{(Diff\_CS), }\AttributeTok{sum\_Diff\_PS =} \FunctionTok{sum}\NormalTok{(Diff\_PS), }\AttributeTok{sum\_Diff\_TS =} \FunctionTok{sum}\NormalTok{(Diff\_TS), }
+            \AttributeTok{mean\_Diff\_CS =} \FunctionTok{mean}\NormalTok{(Diff\_CS), }\AttributeTok{mean\_Diff\_PS =} \FunctionTok{mean}\NormalTok{(Diff\_PS), }\AttributeTok{mean\_Diff\_TS =} \FunctionTok{mean}\NormalTok{(Diff\_TS), }
+            \AttributeTok{.groups =} \StringTok{\textquotesingle{}drop\textquotesingle{}}\NormalTok{) }\SpecialCharTok{|\textgreater{}}
+\NormalTok{  knitr}\SpecialCharTok{::}\FunctionTok{kable}\NormalTok{(}\AttributeTok{format =} \StringTok{"latex"}\NormalTok{, }\AttributeTok{booktabs =} \ConstantTok{TRUE}\NormalTok{, }
+               \AttributeTok{caption =} \StringTok{"Summary of each surplus difference"}\NormalTok{) }\SpecialCharTok{|\textgreater{}}
+\NormalTok{  kableExtra}\SpecialCharTok{::}\FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{latex\_options =} \StringTok{"hold\_position"}\NormalTok{)}
+\FunctionTok{cat}\NormalTok{(res\_walfare)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## \begin{table}[!h]
+## \centering
+## \caption{\label{tab:unnamed-chunk-11}Summary of each surplus difference}
+## \centering
+## \begin{tabular}[t]{rrrrrr}
+## \toprule
+## sum\_Diff\_CS & sum\_Diff\_PS & sum\_Diff\_TS & mean\_Diff\_CS & mean\_Diff\_PS & mean\_Diff\_TS\\
+## \midrule
+## -401.63 & 363.19 & -38.437 & -0.25745 & 0.23282 & -0.02464\\
+## \bottomrule
+## \end{tabular}
+## \end{table}
+\end{verbatim}
+
+\hypertarget{answer-to-q9}{%
+\subsection{Answer to Q9}\label{answer-to-q9}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\#\# Q9 Answer }\AlertTok{\#\#\#}
+
+\CommentTok{\# set merged brand code 99999}
+\DocumentationTok{\#\# Note: Ownership matrix is automatically calculated based on brand code in this function}
+\NormalTok{df }\OtherTok{\textless{}{-}}\NormalTok{ df }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{Brand\_merged =} \FunctionTok{if\_else}\NormalTok{(Brand }\SpecialCharTok{\%in\%} \FunctionTok{c}\NormalTok{(}\DecValTok{12000}\NormalTok{, }\DecValTok{49000}\NormalTok{), }\DecValTok{99999}\NormalTok{, Brand))}
+
+
+\NormalTok{res\_merged }\OtherTok{\textless{}{-}}\NormalTok{ df }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{Brand =}\NormalTok{ Brand\_merged) }\SpecialCharTok{\%\textgreater{}\%} \CommentTok{\# set merged brand code}
+  \FunctionTok{compute\_price\_eq}\NormalTok{(., init\_p, Omega\_multi, alpha\_hat, beta\_hat) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{rename}\NormalTok{(}\AttributeTok{price\_merged =}\NormalTok{ price\_post)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 1
+## [1] 10000
+## [1] 2
+## [1] 0.018056
+## [1] 3
+## [1] 0.024164
+## [1] 4
+## [1] 0.022458
+## [1] 5
+## [1] 0.0047659
+## [1] 6
+## [1] 0.0040204
+## [1] 7
+## [1] 0.0036371
+## [1] 8
+## [1] 0.0043358
+## [1] 9
+## [1] 0.0041812
+## [1] 10
+## [1] 0.0030343
+## [1] 11
+## [1] 0.0020701
+## [1] 12
+## [1] 0.0034541
+## [1] 13
+## [1] 0.0022893
+## [1] 14
+## [1] 0.0024913
+## [1] 15
+## [1] 0.002979
+## [1] 16
+## [1] 0.0036706
+## [1] 17
+## [1] 0.0034566
+## [1] 18
+## [1] 0.0033758
+## [1] 19
+## [1] 0.0030004
+## [1] 20
+## [1] 0.0014941
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# join result}
+\NormalTok{df }\OtherTok{\textless{}{-}} \FunctionTok{left\_join}\NormalTok{(df, res\_merged, }\FunctionTok{c}\NormalTok{(}\StringTok{"store"}\NormalTok{, }\StringTok{"week"}\NormalTok{, }\StringTok{"upc"}\NormalTok{)) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{price\_pre =}\NormalTok{ price)}
+
+\NormalTok{res\_merged }\OtherTok{\textless{}{-}}\NormalTok{ df }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{select}\NormalTok{(Brand, Brand\_merged,  descrip, price\_pre, price\_merged) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{group\_by}\NormalTok{(Brand, Brand\_merged,  descrip) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{summarize}\NormalTok{(}\AttributeTok{price\_pre =} \FunctionTok{median}\NormalTok{(price\_pre),}
+            \AttributeTok{price\_merged =} \FunctionTok{median}\NormalTok{(price\_merged),}
+            \AttributeTok{.groups =} \StringTok{\textquotesingle{}drop\textquotesingle{}}\NormalTok{) }\SpecialCharTok{|\textgreater{}}
+\NormalTok{  knitr}\SpecialCharTok{::}\FunctionTok{kable}\NormalTok{(}\AttributeTok{format =} \StringTok{"latex"}\NormalTok{, }\AttributeTok{booktabs =} \ConstantTok{TRUE}\NormalTok{, }
+               \AttributeTok{caption =} \StringTok{"Merge impact on the equilibrium price (median across market)"}\NormalTok{) }\SpecialCharTok{|\textgreater{}}
+\NormalTok{  kableExtra}\SpecialCharTok{::}\FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{latex\_options =} \StringTok{"hold\_position"}\NormalTok{)}
+\NormalTok{res\_merged}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{table}[!h]
+\centering
+\caption{\label{tab:unnamed-chunk-12}Merge impact on the equilibrium price (median across market)}
+\centering
+\begin{tabular}[t]{rrlrr}
+\toprule
+Brand & Brand\_merged & descrip & price\_pre & price\_merged\\
+\midrule
+12000 & 99999 & CAFFEINE FREE PEPSI & 0.02203 & 0.02217\\
+12000 & 99999 & DIET PEPSI CAFFEINE & 0.02203 & 0.02217\\
+12000 & 99999 & DIET PEPSI N.R. BOTT & 0.02336 & 0.02352\\
+12000 & 99999 & PEPSI COLA N.R. BOTT & 0.02336 & 0.02352\\
+12000 & 99999 & PEPSI COLA N/R & 0.02055 & 0.02068\\
+\addlinespace
+38281 & 38281 & DOM ORANGE SODA & 0.01854 & 0.01862\\
+49000 & 99999 & COCA-COLA CLASSIC & 0.02055 & 0.02067\\
+49000 & 99999 & COCA-COLA CLASSIC CA & 0.03875 & 0.03886\\
+49000 & 99999 & COKE DIET CANS & 0.03875 & 0.03886\\
+54900 & 54900 & DR PEPPER & 0.02055 & 0.02055\\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \end{document}

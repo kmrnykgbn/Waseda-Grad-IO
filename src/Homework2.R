@@ -17,7 +17,6 @@ pacman::p_load(
   skimr
 )
 
-
 orig_df <- read_csv("./input/WSDR.csv")
 head(orig_df, 30)
 
@@ -29,7 +28,7 @@ stats <- orig_df %>%
   dplyr::select(skim_variable, mean, sd, p0, p100) %>%
   dplyr::mutate_at(vars(mean, sd, p0, p100), ~round(., 3)) %>%
   kable(format = "latex")
-print(stats)
+cat(stats)
 
 ### Q2 Answer ###
 
@@ -48,7 +47,7 @@ df <- df |>  select(-c(dummy_1200000230))
 # compute market share
 df <- df |>
   dplyr::group_by(store, week) |>
-  mutate(M_t = sum(custcoun),
+  mutate(M_t = mean(custcoun),
          tot_quant_t = sum(move),
          s_jt = move / M_t,
          s_0t = (M_t- tot_quant_t) / M_t,
@@ -111,9 +110,10 @@ J <- nrow(cross_elas_df)
 elas_mat_med <- matrix( rep(cross_elas_df$cross_elas, J), nrow = J, ncol = J)
 diag(elas_mat_med) <- own_elas_df$own_elas
 colnames(elas_mat_med) <- rownames(elas_mat_med) <- as.character(cross_elas_df$descrip)
-elas_mat_med
-
-### Q5 Answer ###
+res_elas_mat <- elas_mat_med |>
+  knitr::kable(format = "latex", booktabs = TRUE, caption = "Median Elasticity matrix") |>
+  kableExtra::kable_styling(latex_options = "hold_position")
+cat(res_elas_mat)
 
 # compute markup and marginal cost
 compute_markup <- function(own_elas_jt, closs_elas_jt,  owner_mat, is_Multi=FALSE) {
@@ -163,8 +163,6 @@ compute_markup <- function(own_elas_jt, closs_elas_jt,  owner_mat, is_Multi=FALS
     # calculate markup for a paticular market
     D_p_mat <- owner_mat * S_p_mat
     markup <- solve(D_p_mat) %*% sub_cross_elas$s_jt
-    
-    # calculate marginal cost
     mc <- sub_cross_elas$price - markup
     
     return_df <- data.frame(week = market_comb$week[i],
@@ -185,6 +183,8 @@ compute_markup <- function(own_elas_jt, closs_elas_jt,  owner_mat, is_Multi=FALS
   return(result_df)
 } 
 
+### Q5 Answer ###
+
 # compute single product Nash equilibrium for each market
 J <- nrow(cross_elas_df)
 Omega_sin <- diag(J)
@@ -196,7 +196,9 @@ markup_sin_med <- markup_sin |>
             mc = median(mc), .groups = 'drop')
 
 # compute multi product Nash equilibrium for each market
-Omega_multi <- matrix(0, J, J)
+Omega_multi <- matrix(0, J, J) # inital value
+
+## Note: Ownership matrix is automatically calculated based on brand code in this function
 markup_multi <- compute_markup(own_elas_jt, cross_elas_jt, Omega_multi, is_Multi=TRUE)
 markup_multi_med <- markup_multi |>
   select(Brand, descrip, markup, markup_dev_p, mc) |>
@@ -251,8 +253,8 @@ compute_price_eq = function(df, init_p, owner_mat, alpha_hat, beta_hat, is_Multi
     print(counter)
     print(error)
     
-    unique_week <- unique(cross_elas_jt$week)
-    unique_store <- unique(cross_elas_jt$store)
+    unique_week <- unique(df$week)
+    unique_store <- unique(df$store)
     
     market_comb <- expand.grid(week = unique_week, store = unique_store)
     
@@ -337,7 +339,7 @@ df <- left_join(df, markup_multi |> select(store, week, upc, mc),
                 by = c("store", "week", "upc"))
 
 # initial price
-init_p <- rep(0.024, nrow(df))
+init_p <- rep(0.025, nrow(df))
 
 # computation result
 alpha_hat <- model1_IV$coefficients["fit_price"]
@@ -347,15 +349,18 @@ p_eq_ct <- df %>%
   mutate(mc = mc_post) %>% # set marginal cost 10% increase
   compute_price_eq(., init_p, Omega_multi, alpha_hat, beta_hat)
 
-# results to tex
+# join result
 df <- left_join(df, p_eq_ct, c("store", "week", "upc")) |>
   mutate(price_pre = price)
 
 # results to tex
 res_p_eq_ct <- df |>
-  select(Brand, descrip, price_pre, price_post) |>
+  select(Brand, descrip, price_pre, price_post, mc, mc_post) |>
   group_by(Brand, descrip) |>
-  summarize(price_pre = median(price_pre), price_post = median(price_post), .groups = 'drop') |>
+  summarize(price_pre = median(price_pre),
+            price_post = median(price_post), 
+            mc_price_share_diff = median((mc_post - mc)/price_post),
+            .groups = 'drop') |>
   knitr::kable(format = "latex", booktabs = TRUE, 
                caption = "Counterfactural Exercise (MC increases by 10%)") |>
   kableExtra::kable_styling(latex_options = "hold_position")
@@ -406,7 +411,7 @@ compute_walfare = function(df, alpha_hat, beta_hat){
     walfare_df <- data.frame(week = week_i,
                              store = store_i,
                              CS = CS,
-                             profit = PS$calc_profit,
+                             PS = PS$calc_profit,
                              TS = CS + PS$calc_profit)
     
     # store dataframe
@@ -426,7 +431,7 @@ walfare_post <- df |>
   compute_walfare(alpha_hat, beta_hat)
 
 Diff_CS <- walfare_post$CS - walfare_pre$CS
-Diff_PS <- walfare_post$calc_profit - walfare_pre$calc_profit
+Diff_PS <- walfare_post$PS - walfare_pre$PS
 Diff_TS <- walfare_post$TS - walfare_pre$TS
 
 # results to tex
@@ -434,9 +439,37 @@ res_walfare <- walfare_post |>
   mutate(Diff_CS = Diff_CS, Diff_PS = Diff_PS, Diff_TS = Diff_TS) |>
   select(week, store, Diff_CS, Diff_PS, Diff_TS) |>
   summarize(sum_Diff_CS = sum(Diff_CS), sum_Diff_PS = sum(Diff_PS), sum_Diff_TS = sum(Diff_TS), 
-            med_Diff_CS = median(Diff_CS), med_Diff_PS = median(Diff_PS), med_Diff_TS = median(Diff_TS), 
+            mean_Diff_CS = mean(Diff_CS), mean_Diff_PS = mean(Diff_PS), mean_Diff_TS = mean(Diff_TS), 
             .groups = 'drop') |>
   knitr::kable(format = "latex", booktabs = TRUE, 
                caption = "Summary of each surplus difference") |>
   kableExtra::kable_styling(latex_options = "hold_position")
 cat(res_walfare)
+
+### Q9 Answer ###
+
+# set merged brand code 99999
+## Note: Ownership matrix is automatically calculated based on brand code in this function
+df <- df %>%
+  mutate(Brand_merged = if_else(Brand %in% c(12000, 49000), 99999, Brand))
+
+
+res_merged <- df %>%
+  mutate(Brand = Brand_merged) %>% # set merged brand code
+  compute_price_eq(., init_p, Omega_multi, alpha_hat, beta_hat) %>%
+  rename(price_merged = price_post)
+
+# join result
+df <- left_join(df, res_merged, c("store", "week", "upc")) |>
+  mutate(price_pre = price)
+
+res_merged <- df |>
+  select(Brand, Brand_merged,  descrip, price_pre, price_merged) |>
+  group_by(Brand, Brand_merged,  descrip) |>
+  summarize(price_pre = median(price_pre),
+            price_merged = median(price_merged),
+            .groups = 'drop') |>
+  knitr::kable(format = "latex", booktabs = TRUE, 
+               caption = "Merge impact on the equilibrium price (median across market)") |>
+  kableExtra::kable_styling(latex_options = "hold_position")
+cat(res_merged)
