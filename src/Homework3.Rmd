@@ -90,22 +90,22 @@ balanced_df  %>%
 # TODO coliniality of sic 357 dummy
 
 # eq(0.1) in the balanced panel
-bal_01 <- feols(ldsal ~  lemp + ldnpt + ldrst + d357 | yr, 
+bal_01 <- feols(ldsal ~  lemp + ldnpt + ldrst + d357:yr | yr, 
                balanced_df, vcov="hetero"
 )
 
 # eq(0.2) in the balanced panel
-bal_02 <- feols(ldsal ~  lemp + ldnpt + ldrst + d357 | yr + index, 
+bal_02 <- feols(ldsal ~  lemp + ldnpt + ldrst + d357:yr | yr + index, 
                balanced_df, vcov="hetero"
 )
 
 # eq(0.1) in the unbalanced panel
-unbal_01 <- feols(ldsal ~  lemp + ldnpt + ldrst + d357 | yr, 
+unbal_01 <- feols(ldsal ~  lemp + ldnpt + ldrst + d357:yr | yr, 
                unbalanced_df, vcov="hetero"
 )
 
 # eq(0.2) in the unbalanced panel
-unbal_02 <- feols(ldsal ~  lemp + ldnpt + ldrst + d357 | yr + index, 
+unbal_02 <- feols(ldsal ~  lemp + ldnpt + ldrst + d357:yr | yr + index, 
                unbalanced_df, vcov="hetero"
 )
 # Estimation result
