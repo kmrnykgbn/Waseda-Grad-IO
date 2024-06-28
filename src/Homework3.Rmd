@@ -1,12 +1,12 @@
 ---
 title: "Appendix: HW3 Source code"
 output:
+  html_document:
+    df_print: paged
   pdf_document:
     latex_engine: pdflatex
     keep_tex: true
-  html_document:
-    df_print: paged
-date: "2024-06-22"
+date: "2024-06-28"
 ---
 
 ```{r setup, include=TRUE, echo=TRUE}
@@ -34,7 +34,7 @@ pacman::p_load(
 ```
 
 ### Data
-```{r echo=TRUE, include=TRUE}
+```{r data, include=TRUE, echo=TRUE}
 
 orig_df <- read_csv("./input/GMdata.csv")
 summary(orig_df)
@@ -43,7 +43,7 @@ summary(orig_df)
 ## Question 1-a
 
 ### Create unbalanced and balanced data
-```{r pressure, echo=FALSE}
+```{r regression, include=TRUE, echo=TRUE}
 
 # unbalanced panel
 unbalanced_df <- orig_df |>
@@ -65,7 +65,7 @@ balanced_df <-orig_df |>
 ```
 
 ### Summary statistics (unbalanced)
-```{r pressure, echo=FALSE}
+```{r summary, include=TRUE, echo=TRUE}
 # TODO concat two 
 
 # summary of unbalanced panel
@@ -75,7 +75,7 @@ unbalanced_df %>%
 
 ```
 ### Summary statistics (balanced)
-```{r pressure, echo=FALSE}
+```{r summary balanced, include=TRUE, echo=TRUE}
 
 # summary of balanced panel
 balanced_df  %>%
@@ -86,7 +86,7 @@ balanced_df  %>%
 
 ## Question 1-b and Question 1-c
 
-```{r pressure, echo=FALSE}
+```{r fixed effect, include=TRUE, echo=TRUE}
 # TODO coliniality of sic 357 dummy
 
 # eq(0.1) in the balanced panel
@@ -119,7 +119,7 @@ etable(bal_01, bal_02, unbal_01, unbal_02,
 
 ## Question 2-a
 
-```{r pressure, echo=FALSE}
+```{r production function reg, include=TRUE, echo=TRUE}
 # First stage
 model <- feols(ldsal ~  lemp + yr + yr:d357 + poly(ldnpt, ldrst, ldinv, degree=2), 
                unbalanced_df, vcov="hetero"
@@ -136,7 +136,7 @@ etable(model,
 ## Question 2-b
 
 ### First stage
-```{r pressure, echo=FALSE}
+```{r production function estim, include=TRUE, echo=TRUE}
 # estimated coef
 beta_1 = coef(model)['lemp']
 coef_yr78 = coef(model)['yr78']
@@ -175,7 +175,7 @@ unbalanced_df　<- unbalanced_df |>
 ```
 
 ### Second stage
-```{r pressure, echo=FALSE}
+```{r prod func estim 2nd, include=TRUE, echo=TRUE}
 func_2nd_stage_GMM <- function(theta, df, W) {
   # coefficient
   beta_0 <- theta[1]
@@ -219,7 +219,7 @@ res_GMM
 ```
 
 ### Standard error
-```{r pressure, echo=FALSE}
+```{r prod estim se, include=TRUE, echo=TRUE}
 Hessian <- gHgen(par = as.numeric(res_GMM[1:5]), 
                  func_2nd_stage_GMM, df = unbalanced_df,W = diag(2))
 se <- sqrt(diag(solve(-Hessian$Hn)/nrow(unbalanced_df))) 
@@ -227,7 +227,7 @@ se
 ```
 
 ### Productivity dynamics
-```{r pressure, echo=FALSE}
+```{r productivity, include=TRUE, echo=TRUE}
 beta_0_hat <- as.numeric(res_GMM[1])
 beta_2_hat <- as.numeric(res_GMM[2])
 beta_3_hat <- as.numeric(res_GMM[3])

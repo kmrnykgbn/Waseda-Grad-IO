@@ -1,0 +1,638 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Appendix: HW3 Source code},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Appendix: HW3 Source code}
+\author{}
+\date{\vspace{-2.5em}2024-06-28}
+
+\begin{document}
+\maketitle
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{knitr}\SpecialCharTok{::}\NormalTok{opts\_chunk}\SpecialCharTok{$}\FunctionTok{set}\NormalTok{(}\AttributeTok{echo =} \ConstantTok{TRUE}\NormalTok{)}
+\FunctionTok{rm}\NormalTok{(}\AttributeTok{list =} \FunctionTok{ls}\NormalTok{())}
+\FunctionTok{gc}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##          used (Mb) gc trigger (Mb) max used (Mb)
+## Ncells 487148 26.1    1048621 56.1   686460 36.7
+## Vcells 907354  7.0    8388608 64.0  1875999 14.4
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{1}\NormalTok{)}
+\FunctionTok{options}\NormalTok{(}\AttributeTok{digits=}\DecValTok{5}\NormalTok{) }
+\ControlFlowTok{if}\NormalTok{ (}\SpecialCharTok{!}\FunctionTok{require}\NormalTok{(}\StringTok{"pacman"}\NormalTok{)) }\FunctionTok{install.packages}\NormalTok{(}\StringTok{"pacman"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 要求されたパッケージ pacman をロード中です
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pacman}\SpecialCharTok{::}\FunctionTok{p\_load}\NormalTok{(}
+\NormalTok{  plm,}
+\NormalTok{  ggplot2,}
+\NormalTok{  optimx,}
+\NormalTok{  tidyverse,}
+\NormalTok{  fixest,}
+\NormalTok{  knitr,}
+\NormalTok{  kableExtra,}
+\NormalTok{  stargazer,}
+\NormalTok{  tidymodels,}
+\NormalTok{  modelsummary,}
+\NormalTok{  ggplot2,}
+\NormalTok{  skimr,}
+\NormalTok{  gmm}
+\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{data}{%
+\subsubsection{Data}\label{data}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{orig\_df }\OtherTok{\textless{}{-}} \FunctionTok{read\_csv}\NormalTok{(}\StringTok{"./input/GMdata.csv"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Rows: 2971 Columns: 9
+## -- Column specification --------------------------------------------------------
+## Delimiter: ","
+## dbl (9): index, sic3, yr, ldsal, lemp, ldnpt, ldrst, ldrnd, ldinv
+## 
+## i Use `spec()` to retrieve the full column specification for this data.
+## i Specify the column types or set `show_col_types = FALSE` to quiet this message.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{summary}\NormalTok{(orig\_df)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##      index           sic3           yr           ldsal             lemp        
+##  Min.   :   1   Min.   :200   Min.   :73.0   Min.   :-0.857   Min.   :-3.7723  
+##  1st Qu.: 344   1st Qu.:286   1st Qu.:78.0   1st Qu.: 4.250   1st Qu.:-0.0248  
+##  Median : 696   Median :356   Median :78.0   Median : 5.529   Median : 1.1142  
+##  Mean   : 696   Mean   :331   Mean   :80.5   Mean   : 5.673   Mean   : 1.2592  
+##  3rd Qu.:1048   3rd Qu.:367   3rd Qu.:83.0   3rd Qu.: 7.084   3rd Qu.: 2.6319  
+##  Max.   :1400   Max.   :399   Max.   :88.0   Max.   :11.698   Max.   : 6.7322  
+##      ldnpt           ldrst           ldrnd            ldinv      
+##  Min.   :-1.39   Min.   :-4.29   Min.   :-5.313   Min.   :-3.84  
+##  1st Qu.: 2.95   1st Qu.: 1.99   1st Qu.: 0.354   1st Qu.: 1.12  
+##  Median : 4.21   Median : 3.18   Median : 1.631   Median : 2.51  
+##  Mean   : 4.47   Mean   : 3.40   Mean   : 1.788   Mean   : 2.67  
+##  3rd Qu.: 6.00   3rd Qu.: 4.79   3rd Qu.: 3.189   3rd Qu.: 4.20  
+##  Max.   :11.11   Max.   : 9.97   Max.   : 8.432   Max.   : 8.99
+\end{verbatim}
+
+\hypertarget{question-1-a}{%
+\subsection{Question 1-a}\label{question-1-a}}
+
+\hypertarget{create-unbalanced-and-balanced-data}{%
+\subsubsection{Create unbalanced and balanced
+data}\label{create-unbalanced-and-balanced-data}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# unbalanced panel}
+\NormalTok{unbalanced\_df }\OtherTok{\textless{}{-}}\NormalTok{ orig\_df }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{d357 =} \FunctionTok{as.factor}\NormalTok{(}\FunctionTok{if\_else}\NormalTok{(sic3 }\SpecialCharTok{==}\DecValTok{357}\NormalTok{, }\DecValTok{1}\NormalTok{, }\DecValTok{0}\NormalTok{)),}
+         \AttributeTok{yr =} \FunctionTok{as.factor}\NormalTok{(yr)) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{as.data.frame}\NormalTok{()}
+
+\CommentTok{\# balanced panel}
+\NormalTok{balanced\_df }\OtherTok{\textless{}{-}}\NormalTok{orig\_df }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{d357 =} \FunctionTok{as.factor}\NormalTok{(}\FunctionTok{if\_else}\NormalTok{(sic3 }\SpecialCharTok{==}\DecValTok{357}\NormalTok{, }\DecValTok{1}\NormalTok{, }\DecValTok{0}\NormalTok{)),}
+         \AttributeTok{yr =} \FunctionTok{as.factor}\NormalTok{(yr)) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{group\_by}\NormalTok{(index) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{n =} \FunctionTok{n}\NormalTok{()) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{filter}\NormalTok{(n }\SpecialCharTok{==} \DecValTok{4}\NormalTok{) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{ungroup}\NormalTok{() }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{select}\NormalTok{(}\SpecialCharTok{{-}}\FunctionTok{c}\NormalTok{(n)) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{as.data.frame}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{summary-statistics-unbalanced}{%
+\subsubsection{Summary statistics
+(unbalanced)}\label{summary-statistics-unbalanced}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# }\AlertTok{TODO}\CommentTok{ concat two }
+
+\CommentTok{\# summary of unbalanced panel}
+\NormalTok{unbalanced\_df }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{select}\NormalTok{(ldsal, lemp, ldnpt, ldrst, ldrnd, ldinv) }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  stargazer}\SpecialCharTok{::}\FunctionTok{stargazer}\NormalTok{(., }\AttributeTok{type =} \StringTok{"latex"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## % Table created by stargazer v.5.2.3 by Marek Hlavac, Social Policy Institute. E-mail: marek.hlavac at gmail.com
+## % Date and time: 金, 6 28, 2024 - 21:42:44
+## \begin{table}[!htbp] \centering 
+##   \caption{} 
+##   \label{} 
+## \begin{tabular}{@{\extracolsep{5pt}}lccccc} 
+## \\[-1.8ex]\hline 
+## \hline \\[-1.8ex] 
+## Statistic & \multicolumn{1}{c}{N} & \multicolumn{1}{c}{Mean} & \multicolumn{1}{c}{St. Dev.} & \multicolumn{1}{c}{Min} & \multicolumn{1}{c}{Max} \\ 
+## \hline \\[-1.8ex] 
+## ldsal & 2,971 & 5.673 & 1.961 & $-$0.857 & 11.698 \\ 
+## lemp & 2,971 & 1.259 & 1.775 & $-$3.772 & 6.732 \\ 
+## ldnpt & 2,971 & 4.469 & 2.217 & $-$1.389 & 11.112 \\ 
+## ldrst & 2,971 & 3.401 & 2.029 & $-$4.287 & 9.966 \\ 
+## ldrnd & 2,971 & 1.788 & 2.052 & $-$5.313 & 8.432 \\ 
+## ldinv & 2,971 & 2.675 & 2.170 & $-$3.844 & 8.989 \\ 
+## \hline \\[-1.8ex] 
+## \end{tabular} 
+## \end{table}
+\end{verbatim}
+
+\hypertarget{summary-statistics-balanced}{%
+\subsubsection{Summary statistics
+(balanced)}\label{summary-statistics-balanced}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# summary of balanced panel}
+\NormalTok{balanced\_df  }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{select}\NormalTok{(ldsal, lemp, ldnpt, ldrst, ldrnd, ldinv)  }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  stargazer}\SpecialCharTok{::}\FunctionTok{stargazer}\NormalTok{(., }\AttributeTok{type =} \StringTok{"latex"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## % Table created by stargazer v.5.2.3 by Marek Hlavac, Social Policy Institute. E-mail: marek.hlavac at gmail.com
+## % Date and time: 金, 6 28, 2024 - 21:42:44
+## \begin{table}[!htbp] \centering 
+##   \caption{} 
+##   \label{} 
+## \begin{tabular}{@{\extracolsep{5pt}}lccccc} 
+## \\[-1.8ex]\hline 
+## \hline \\[-1.8ex] 
+## Statistic & \multicolumn{1}{c}{N} & \multicolumn{1}{c}{Mean} & \multicolumn{1}{c}{St. Dev.} & \multicolumn{1}{c}{Min} & \multicolumn{1}{c}{Max} \\ 
+## \hline \\[-1.8ex] 
+## ldsal & 856 & 6.914 & 1.838 & 1.664 & 11.698 \\ 
+## lemp & 856 & 2.413 & 1.622 & $-$2.071 & 6.732 \\ 
+## ldnpt & 856 & 5.916 & 2.057 & 0.806 & 11.112 \\ 
+## ldrst & 856 & 4.886 & 1.930 & 0.062 & 9.966 \\ 
+## ldrnd & 856 & 3.222 & 1.994 & $-$2.711 & 8.432 \\ 
+## ldinv & 856 & 4.069 & 2.055 & $-$2.076 & 8.888 \\ 
+## \hline \\[-1.8ex] 
+## \end{tabular} 
+## \end{table}
+\end{verbatim}
+
+\hypertarget{question-1-b-and-question-1-c}{%
+\subsection{Question 1-b and Question
+1-c}\label{question-1-b-and-question-1-c}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# }\AlertTok{TODO}\CommentTok{ coliniality of sic 357 dummy}
+
+\CommentTok{\# eq(0.1) in the balanced panel}
+\NormalTok{bal\_01 }\OtherTok{\textless{}{-}} \FunctionTok{feols}\NormalTok{(ldsal }\SpecialCharTok{\textasciitilde{}}\NormalTok{  lemp }\SpecialCharTok{+}\NormalTok{ ldnpt }\SpecialCharTok{+}\NormalTok{ ldrst }\SpecialCharTok{+}\NormalTok{ d357}\SpecialCharTok{:}\NormalTok{yr }\SpecialCharTok{|}\NormalTok{ yr, }
+\NormalTok{               balanced\_df, }\AttributeTok{vcov=}\StringTok{"hetero"}
+\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## The variables 'd3571:yr73', 'd3571:yr78', 'd3571:yr83' and 'd3571:yr88' have been removed because of collinearity (see $collin.var).
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# eq(0.2) in the balanced panel}
+\NormalTok{bal\_02 }\OtherTok{\textless{}{-}} \FunctionTok{feols}\NormalTok{(ldsal }\SpecialCharTok{\textasciitilde{}}\NormalTok{  lemp }\SpecialCharTok{+}\NormalTok{ ldnpt }\SpecialCharTok{+}\NormalTok{ ldrst }\SpecialCharTok{+}\NormalTok{ d357}\SpecialCharTok{:}\NormalTok{yr }\SpecialCharTok{|}\NormalTok{ yr }\SpecialCharTok{+}\NormalTok{ index, }
+\NormalTok{               balanced\_df, }\AttributeTok{vcov=}\StringTok{"hetero"}
+\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## The variables 'd3571:yr73', 'd3571:yr78', 'd3571:yr83', 'd3570:yr88' and 'd3571:yr88' have been removed because of collinearity (see $collin.var).
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# eq(0.1) in the unbalanced panel}
+\NormalTok{unbal\_01 }\OtherTok{\textless{}{-}} \FunctionTok{feols}\NormalTok{(ldsal }\SpecialCharTok{\textasciitilde{}}\NormalTok{  lemp }\SpecialCharTok{+}\NormalTok{ ldnpt }\SpecialCharTok{+}\NormalTok{ ldrst }\SpecialCharTok{+}\NormalTok{ d357}\SpecialCharTok{:}\NormalTok{yr }\SpecialCharTok{|}\NormalTok{ yr, }
+\NormalTok{               unbalanced\_df, }\AttributeTok{vcov=}\StringTok{"hetero"}
+\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## The variables 'd3571:yr73', 'd3571:yr78', 'd3571:yr83' and 'd3571:yr88' have been removed because of collinearity (see $collin.var).
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# eq(0.2) in the unbalanced panel}
+\NormalTok{unbal\_02 }\OtherTok{\textless{}{-}} \FunctionTok{feols}\NormalTok{(ldsal }\SpecialCharTok{\textasciitilde{}}\NormalTok{  lemp }\SpecialCharTok{+}\NormalTok{ ldnpt }\SpecialCharTok{+}\NormalTok{ ldrst }\SpecialCharTok{+}\NormalTok{ d357}\SpecialCharTok{:}\NormalTok{yr }\SpecialCharTok{|}\NormalTok{ yr }\SpecialCharTok{+}\NormalTok{ index, }
+\NormalTok{               unbalanced\_df, }\AttributeTok{vcov=}\StringTok{"hetero"}
+\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## The variables 'd3571:yr73', 'd3571:yr78', 'd3571:yr83', 'd3570:yr88' and 'd3571:yr88' have been removed because of collinearity (see $collin.var).
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Estimation result}
+\FunctionTok{etable}\NormalTok{(bal\_01, bal\_02, unbal\_01, unbal\_02, }
+       \AttributeTok{signif.code=}\FunctionTok{c}\NormalTok{(}\StringTok{"***"}\OtherTok{=}\FloatTok{0.01}\NormalTok{,}\StringTok{"**"}\OtherTok{=}\FloatTok{0.05}\NormalTok{,}\StringTok{"*"}\OtherTok{=}\FloatTok{0.10}\NormalTok{), }
+       \AttributeTok{style.tex =} \FunctionTok{style.tex}\NormalTok{(}\StringTok{"aer"}\NormalTok{),  }\AttributeTok{tex =} \ConstantTok{TRUE}\NormalTok{,}
+       \AttributeTok{digits=}\DecValTok{3}\NormalTok{, }
+       \AttributeTok{digits.stats=}\DecValTok{3}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## \begingroup
+## \centering
+## \begin{tabular}{lcccc}
+##    \toprule
+##     & \multicolumn{4}{c}{ldsal}\\
+##                         & (1)            & (2)           & (3)            & (4)\\  
+##    \midrule 
+##    lemp                 & 0.496$^{***}$  & 0.685$^{***}$ & 0.578$^{***}$  & 0.733$^{***}$\\   
+##                         & (0.025)        & (0.036)       & (0.015)        & (0.026)\\   
+##    ldnpt                & 0.460$^{***}$  & 0.180$^{***}$ & 0.372$^{***}$  & 0.135$^{***}$\\   
+##                         & (0.019)        & (0.034)       & (0.012)        & (0.021)\\   
+##    ldrst                & 0.034$^{**}$   & 0.099$^{***}$ & 0.038$^{***}$  & 0.058$^{***}$\\   
+##                         & (0.015)        & (0.035)       & (0.007)        & (0.021)\\   
+##    d3570 $\times$ yr73  & 3.24$^{***}$   & 3.42$^{***}$  & 3.21$^{***}$   & 3.47$^{***}$\\   
+##                         & (0.078)        & (0.049)       & (0.050)        & (0.049)\\   
+##    d3570 $\times$ yr78  & 2.06$^{***}$   & 2.29$^{***}$  & 1.97$^{***}$   & 2.34$^{***}$\\   
+##                         & (0.071)        & (0.043)       & (0.048)        & (0.049)\\   
+##    d3570 $\times$ yr83  & 0.689$^{***}$  & 0.944$^{***}$ & 0.689$^{***}$  & 1.05$^{***}$\\   
+##                         & (0.070)        & (0.043)       & (0.058)        & (0.047)\\   
+##    d3570 $\times$ yr88  & -0.240$^{***}$ &               & -0.466$^{***}$ &   \\   
+##                         & (0.057)        &               & (0.056)        &   \\   
+##     \\
+##    Observations         & 856            & 856           & 2,971          & 2,971\\  
+##    R$^2$                & 0.968          & 0.994         & 0.962          & 0.996\\  
+##    Within R$^2$         & 0.968          & 0.903         & 0.961          & 0.878\\  
+##     \\
+##    yr fixed effects     & $\checkmark$   & $\checkmark$  & $\checkmark$   & $\checkmark$\\   
+##    index fixed effects  &                & $\checkmark$  &                & $\checkmark$\\   
+##    \bottomrule
+## \end{tabular}
+## \par\endgroup
+\end{verbatim}
+
+\hypertarget{question-2-a}{%
+\subsection{Question 2-a}\label{question-2-a}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# First stage}
+\NormalTok{model }\OtherTok{\textless{}{-}} \FunctionTok{feols}\NormalTok{(ldsal }\SpecialCharTok{\textasciitilde{}}\NormalTok{  lemp }\SpecialCharTok{+}\NormalTok{ yr }\SpecialCharTok{+}\NormalTok{ yr}\SpecialCharTok{:}\NormalTok{d357 }\SpecialCharTok{+} \FunctionTok{poly}\NormalTok{(ldnpt, ldrst, ldinv, }\AttributeTok{degree=}\DecValTok{2}\NormalTok{), }
+\NormalTok{               unbalanced\_df, }\AttributeTok{vcov=}\StringTok{"hetero"}
+\NormalTok{)}
+\CommentTok{\# Estimation result}
+\FunctionTok{etable}\NormalTok{(model, }
+       \AttributeTok{signif.code=}\FunctionTok{c}\NormalTok{(}\StringTok{"***"}\OtherTok{=}\FloatTok{0.01}\NormalTok{,}\StringTok{"**"}\OtherTok{=}\FloatTok{0.05}\NormalTok{,}\StringTok{"*"}\OtherTok{=}\FloatTok{0.10}\NormalTok{), }
+       \AttributeTok{style.tex =} \FunctionTok{style.tex}\NormalTok{(}\StringTok{"aer"}\NormalTok{),  }\AttributeTok{tex =} \ConstantTok{TRUE}\NormalTok{,}
+       \AttributeTok{digits=}\DecValTok{3}\NormalTok{, }
+       \AttributeTok{digits.stats=}\DecValTok{3}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## \begingroup
+## \centering
+## \begin{tabular}{lc}
+##    \toprule
+##                                          & ldsal\\  
+##                                          & (1)\\  
+##    \midrule 
+##    Constant                              & 4.91$^{***}$\\   
+##                                          & (0.098)\\   
+##    lemp                                  & 0.584$^{***}$\\   
+##                                          & (0.016)\\   
+##    yr78                                  & 0.016\\   
+##                                          & (0.021)\\   
+##    yr83                                  & -0.051$^{**}$\\   
+##                                          & (0.022)\\   
+##    yr88                                  & 0.169$^{***}$\\   
+##                                          & (0.023)\\   
+##    poly(ldnpt,ldrst,ldinv,degree=2)1.0.0 & 35.0$^{***}$\\   
+##                                          & (1.69)\\   
+##    poly(ldnpt,ldrst,ldinv,degree=2)2.0.0 & 2.73\\   
+##                                          & (3.87)\\   
+##    poly(ldnpt,ldrst,ldinv,degree=2)0.1.0 & 1.63$^{*}$\\   
+##                                          & (0.971)\\   
+##    poly(ldnpt,ldrst,ldinv,degree=2)1.1.0 & -100.7\\   
+##                                          & (139.2)\\   
+##    poly(ldnpt,ldrst,ldinv,degree=2)0.2.0 & -0.638\\   
+##                                          & (1.08)\\   
+##    poly(ldnpt,ldrst,ldinv,degree=2)0.0.1 & 11.5$^{***}$\\   
+##                                          & (1.77)\\   
+##    poly(ldnpt,ldrst,ldinv,degree=2)1.0.1 & 231.5\\   
+##                                          & (293.1)\\   
+##    poly(ldnpt,ldrst,ldinv,degree=2)0.1.1 & 33.2\\   
+##                                          & (137.4)\\   
+##    poly(ldnpt,ldrst,ldinv,degree=2)0.0.2 & -3.29\\   
+##                                          & (3.81)\\   
+##    yr73 $\times$ d3571                   & -3.24$^{***}$\\   
+##                                          & (0.054)\\   
+##    yr78 $\times$ d3571                   & -2.04$^{***}$\\   
+##                                          & (0.044)\\   
+##    yr83 $\times$ d3571                   & -0.757$^{***}$\\   
+##                                          & (0.053)\\   
+##    yr88 $\times$ d3571                   & 0.408$^{***}$\\   
+##                                          & (0.052)\\   
+##     \\
+##    Observations                          & 2,971\\  
+##    R$^2$                                 & 0.964\\  
+##    Adjusted R$^2$                        & 0.964\\  
+##    \bottomrule
+## \end{tabular}
+## \par\endgroup
+\end{verbatim}
+
+\hypertarget{question-2-b}{%
+\subsection{Question 2-b}\label{question-2-b}}
+
+\hypertarget{first-stage}{%
+\subsubsection{First stage}\label{first-stage}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# estimated coef}
+\NormalTok{beta\_1 }\OtherTok{=} \FunctionTok{coef}\NormalTok{(model)[}\StringTok{\textquotesingle{}lemp\textquotesingle{}}\NormalTok{]}
+\NormalTok{coef\_yr78 }\OtherTok{=} \FunctionTok{coef}\NormalTok{(model)[}\StringTok{\textquotesingle{}yr78\textquotesingle{}}\NormalTok{]}
+\NormalTok{coef\_yr83 }\OtherTok{=} \FunctionTok{coef}\NormalTok{(model)[}\StringTok{\textquotesingle{}yr83\textquotesingle{}}\NormalTok{]}
+\NormalTok{coef\_yr88 }\OtherTok{=} \FunctionTok{coef}\NormalTok{(model)[}\StringTok{\textquotesingle{}yr88\textquotesingle{}}\NormalTok{]}
+\NormalTok{coef\_yr73\_d357 }\OtherTok{=} \FunctionTok{coef}\NormalTok{(model)[}\StringTok{\textquotesingle{}yr73:d3571\textquotesingle{}}\NormalTok{]}
+\NormalTok{coef\_yr78\_d357 }\OtherTok{=} \FunctionTok{coef}\NormalTok{(model)[}\StringTok{\textquotesingle{}yr78:d3571\textquotesingle{}}\NormalTok{]}
+\NormalTok{coef\_yr83\_d357 }\OtherTok{=} \FunctionTok{coef}\NormalTok{(model)[}\StringTok{\textquotesingle{}yr83:d3571\textquotesingle{}}\NormalTok{]}
+\NormalTok{coef\_yr88\_d357 }\OtherTok{=} \FunctionTok{coef}\NormalTok{(model)[}\StringTok{\textquotesingle{}yr88:d3571\textquotesingle{}}\NormalTok{]}
+
+\CommentTok{\# predict phi\_it}
+\NormalTok{unbalanced\_df　}\OtherTok{\textless{}{-}}\NormalTok{ unbalanced\_df }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{d\_yr73 =} \FunctionTok{if\_else}\NormalTok{(yr }\SpecialCharTok{==}\DecValTok{73}\NormalTok{, }\DecValTok{1}\NormalTok{, }\DecValTok{0}\NormalTok{),}
+         \AttributeTok{d\_yr78 =} \FunctionTok{if\_else}\NormalTok{(yr }\SpecialCharTok{==}\DecValTok{78}\NormalTok{, }\DecValTok{1}\NormalTok{, }\DecValTok{0}\NormalTok{),}
+         \AttributeTok{d\_yr83 =} \FunctionTok{if\_else}\NormalTok{(yr }\SpecialCharTok{==}\DecValTok{83}\NormalTok{, }\DecValTok{1}\NormalTok{, }\DecValTok{0}\NormalTok{),}
+         \AttributeTok{d\_yr88 =} \FunctionTok{if\_else}\NormalTok{(yr }\SpecialCharTok{==}\DecValTok{88}\NormalTok{, }\DecValTok{1}\NormalTok{, }\DecValTok{0}\NormalTok{),}
+         \AttributeTok{d357 =} \FunctionTok{as.numeric}\NormalTok{(d357),}
+\NormalTok{        )　}\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{phi\_hat\_it =} \FunctionTok{fitted}\NormalTok{(model)}
+                  \SpecialCharTok{{-}}\NormalTok{ (beta\_1 }\SpecialCharTok{*}\NormalTok{ lemp)}
+                  \SpecialCharTok{{-}}\NormalTok{ (coef\_yr78 }\SpecialCharTok{*}\NormalTok{ d\_yr78)}
+                  \SpecialCharTok{{-}}\NormalTok{ (coef\_yr83 }\SpecialCharTok{*}\NormalTok{ d\_yr83)}
+                  \SpecialCharTok{{-}}\NormalTok{ (coef\_yr88 }\SpecialCharTok{*}\NormalTok{ d\_yr88)}
+                  \SpecialCharTok{{-}}\NormalTok{ (coef\_yr73\_d357 }\SpecialCharTok{*}\NormalTok{ d\_yr78 }\SpecialCharTok{*}\NormalTok{ d357)}
+                  \SpecialCharTok{{-}}\NormalTok{ (coef\_yr78\_d357 }\SpecialCharTok{*}\NormalTok{ d\_yr83 }\SpecialCharTok{*}\NormalTok{ d357)}
+                  \SpecialCharTok{{-}}\NormalTok{ (coef\_yr83\_d357 }\SpecialCharTok{*}\NormalTok{ d\_yr88 }\SpecialCharTok{*}\NormalTok{ d357)}
+                  \SpecialCharTok{{-}}\NormalTok{ (coef\_yr88\_d357 }\SpecialCharTok{*}\NormalTok{ d\_yr88 }\SpecialCharTok{*}\NormalTok{ d357)}
+\NormalTok{         ) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{group\_by}\NormalTok{(index) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{phi\_hat\_it\_m1 =} \FunctionTok{lag}\NormalTok{(phi\_hat\_it, }\DecValTok{1}\NormalTok{),}
+         \AttributeTok{ldnpt\_m1 =} \FunctionTok{lag}\NormalTok{(ldnpt, }\DecValTok{1}\NormalTok{),}
+         \AttributeTok{ldrst\_m1 =} \FunctionTok{lag}\NormalTok{(ldrst, }\DecValTok{1}\NormalTok{)) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{ungroup}\NormalTok{() }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{drop\_na}\NormalTok{(phi\_hat\_it\_m1, ldnpt\_m1, ldrst\_m1)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{second-stage}{%
+\subsubsection{Second stage}\label{second-stage}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{func\_2nd\_stage\_GMM }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(theta, df, W) \{}
+  \CommentTok{\# coefficient}
+\NormalTok{  beta\_0 }\OtherTok{\textless{}{-}}\NormalTok{ theta[}\DecValTok{1}\NormalTok{]}
+\NormalTok{  beta\_2 }\OtherTok{\textless{}{-}}\NormalTok{ theta[}\DecValTok{2}\NormalTok{]}
+\NormalTok{  beta\_3 }\OtherTok{\textless{}{-}}\NormalTok{ theta[}\DecValTok{3}\NormalTok{]}
+\NormalTok{  beta\_h }\OtherTok{\textless{}{-}}\NormalTok{ theta[}\DecValTok{4}\NormalTok{]}
+\NormalTok{  beta\_h2 }\OtherTok{\textless{}{-}}\NormalTok{ theta[}\DecValTok{5}\NormalTok{]}
+  
+\NormalTok{  df }\OtherTok{\textless{}{-}}\NormalTok{ df }\SpecialCharTok{|\textgreater{}}
+      \FunctionTok{mutate}\NormalTok{(}
+          \AttributeTok{h\_it\_m1 =}\NormalTok{ (phi\_hat\_it\_m1 }\SpecialCharTok{{-}}\NormalTok{ beta\_0 }\SpecialCharTok{{-}}\NormalTok{ beta\_2 }\SpecialCharTok{*}\NormalTok{ ldnpt\_m1 }
+          \SpecialCharTok{{-}}\NormalTok{ beta\_3 }\SpecialCharTok{*}\NormalTok{ ldrst\_m1),}
+          \AttributeTok{xi\_it =}\NormalTok{ phi\_hat\_it }\SpecialCharTok{{-}}\NormalTok{ beta\_0 }\SpecialCharTok{{-}}\NormalTok{ beta\_2 }\SpecialCharTok{*}\NormalTok{ ldnpt }
+          \SpecialCharTok{{-}}\NormalTok{ beta\_3 }\SpecialCharTok{*}\NormalTok{ ldrst }
+          \SpecialCharTok{{-}}\NormalTok{ beta\_h }\SpecialCharTok{*}\NormalTok{ h\_it\_m1 }
+          \SpecialCharTok{{-}}\NormalTok{ beta\_h2 }\SpecialCharTok{*}\NormalTok{ (h\_it\_m1)}\SpecialCharTok{\^{}}\DecValTok{2}
+\NormalTok{        )}
+\NormalTok{  moment\_df }\OtherTok{\textless{}{-}}
+    \FunctionTok{cbind}\NormalTok{(}
+\NormalTok{      df}\SpecialCharTok{$}\NormalTok{xi\_it }\SpecialCharTok{*}\NormalTok{ df}\SpecialCharTok{$}\NormalTok{ldnpt,}
+\NormalTok{      df}\SpecialCharTok{$}\NormalTok{xi\_it }\SpecialCharTok{*}\NormalTok{ df}\SpecialCharTok{$}\NormalTok{ldrst}
+\NormalTok{  )}
+  
+\NormalTok{  moment }\OtherTok{\textless{}{-}} \FunctionTok{apply}\NormalTok{(moment\_df, }\DecValTok{2}\NormalTok{, mean)}
+\NormalTok{  obj\_func }\OtherTok{\textless{}{-}} \FunctionTok{t}\NormalTok{(moment) }\SpecialCharTok{\%*\%}\NormalTok{ W }\SpecialCharTok{\%*\%}\NormalTok{ moment}
+  
+  \FunctionTok{return}\NormalTok{(}\FunctionTok{as.numeric}\NormalTok{(obj\_func))}
+\NormalTok{\}}
+
+\NormalTok{res\_GMM }\OtherTok{\textless{}{-}}
+  \FunctionTok{optimx}\NormalTok{(}
+    \AttributeTok{par =} \FunctionTok{c}\NormalTok{(}\FloatTok{0.05}\NormalTok{, }\FloatTok{0.05}\NormalTok{, }\FloatTok{0.05}\NormalTok{, }\FloatTok{0.05}\NormalTok{, }\FloatTok{0.05}\NormalTok{),}
+\NormalTok{    func\_2nd\_stage\_GMM,}
+    \AttributeTok{method =} \StringTok{"L{-}BFGS{-}B"}\NormalTok{,}
+    \AttributeTok{df =}\NormalTok{ unbalanced\_df,}
+    \AttributeTok{W =} \FunctionTok{diag}\NormalTok{(}\DecValTok{2}\NormalTok{),}
+    \AttributeTok{hessian =} \ConstantTok{TRUE}
+\NormalTok{  )}
+
+\NormalTok{res\_GMM}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##                p1       p2      p3       p4     p5      value fevals gevals
+## L-BFGS-B 0.050296 0.051499 0.43911 0.093126 0.1673 5.4363e-07     54     54
+##          niter convcode  kkt1  kkt2 xtime
+## L-BFGS-B    NA        0 FALSE FALSE  0.69
+\end{verbatim}
+
+\hypertarget{standard-error}{%
+\subsubsection{Standard error}\label{standard-error}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{Hessian }\OtherTok{\textless{}{-}} \FunctionTok{gHgen}\NormalTok{(}\AttributeTok{par =} \FunctionTok{as.numeric}\NormalTok{(res\_GMM[}\DecValTok{1}\SpecialCharTok{:}\DecValTok{5}\NormalTok{]), }
+\NormalTok{                 func\_2nd\_stage\_GMM, }\AttributeTok{df =}\NormalTok{ unbalanced\_df,}\AttributeTok{W =} \FunctionTok{diag}\NormalTok{(}\DecValTok{2}\NormalTok{))}
+\NormalTok{se }\OtherTok{\textless{}{-}} \FunctionTok{sqrt}\NormalTok{(}\FunctionTok{diag}\NormalTok{(}\FunctionTok{solve}\NormalTok{(}\SpecialCharTok{{-}}\NormalTok{Hessian}\SpecialCharTok{$}\NormalTok{Hn)}\SpecialCharTok{/}\FunctionTok{nrow}\NormalTok{(unbalanced\_df))) }
+\NormalTok{se}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 9.88704 1.53566 0.36423 0.87662 0.20727
+\end{verbatim}
+
+\hypertarget{productivity-dynamics}{%
+\subsubsection{Productivity dynamics}\label{productivity-dynamics}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{beta\_0\_hat }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(res\_GMM[}\DecValTok{1}\NormalTok{])}
+\NormalTok{beta\_2\_hat }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(res\_GMM[}\DecValTok{2}\NormalTok{])}
+\NormalTok{beta\_3\_hat }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(res\_GMM[}\DecValTok{3}\NormalTok{])}
+\NormalTok{unbalanced\_df　}\OtherTok{\textless{}{-}}\NormalTok{ unbalanced\_df }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{g\_prog =}\NormalTok{ phi\_hat\_it }\SpecialCharTok{{-}}\NormalTok{ beta\_0\_hat }\SpecialCharTok{{-}}\NormalTok{ beta\_2\_hat }\SpecialCharTok{*}\NormalTok{ ldnpt }\SpecialCharTok{{-}}\NormalTok{ beta\_3\_hat }\SpecialCharTok{*}\NormalTok{ ldrst}
+\NormalTok{        )}
+
+\NormalTok{res\_prod\_growth }\OtherTok{\textless{}{-}}\NormalTok{ unbalanced\_df }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{select}\NormalTok{(yr, g\_prog) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{group\_by}\NormalTok{(yr) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{summarize}\NormalTok{(}\AttributeTok{mean\_g =} \FunctionTok{mean}\NormalTok{(g\_prog), }\AttributeTok{var\_g =} \FunctionTok{var}\NormalTok{(g\_prog))}
+\NormalTok{res\_prod\_growth}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 3 x 3
+##   yr    mean_g var_g
+##   <fct>  <dbl> <dbl>
+## 1 78      6.49 0.221
+## 2 83      5.27 0.225
+## 3 88      3.44 0.195
+\end{verbatim}
+
+\end{document}
